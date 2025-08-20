@@ -1,0 +1,5 @@
+#隐藏目录
+/export/
+
+.haxe/
+.haxelib/

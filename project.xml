@@ -1,19 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
 
-	<meta title="spine-haxe-example" package="spine" version="4.2.0" company="Esoteric Software" />
-	<app main="Main" path="export" file="SpineHaxeExample" />
+	<!-- APP Meta -->
+	<meta title="Mint Archive" package="mtarchive" version="0.0.0" company="KittyCathy" />
+	<app main="Main" path="export" file="Mint Archive" />
 	<!-- <app main="MainStarling" path="export" file="SpineHaxeExample" /> -->
 	<!-- <app main="MainFlixel" path="export" file="SpineHaxeExample" /> -->
-	<window allow-high-dpi="true" />
 
-	<haxelib name="openfl" />
-	<haxelib name="starling" />
-	<haxelib name="flixel" />
-	<haxelib name="spine-haxe" />
+	<!-- Window -->
+	<window width="1600" height="900" background="#000000" fps="120" />
+	<window hardware="true" allow-shaders="true" require-shaders="true" depth-buffer="true" stencil-buffer="true" />
+	<window fullscreen="false" resizable="true" borderless="false" vsync="false" allow-high-dpi="true"/>
+	<window orientation="portrait" />
 
-	<source path="example/src" />
-	<assets path="example/assets" rename="assets" />
-	<assets path="example/assets" include="*.skel" rename="assets" type="binary" />
+	<!-- Lib -->
+	<haxelib name="openfl" version="9.4.1"/>
+	<haxelib name="starling" version="2.7.1"/>
+	<haxelib name="flixel" version="6.1.0"/>
+	<haxelib name="spine-haxe" version="4.2.7"/>
+
+	<!-- Multi Platform -->
+
+
+	<!-- Assets -->
+	<source path="source" />
+	<assets path="assets" rename="assets" />
+	<assets path="assets" include="*.skel" rename="assets" type="binary" />
+
+
+	<!-- TESTING Language -->
+	<language name="en-US" />
+	<language name="zh-CN" />
 
 </project>
