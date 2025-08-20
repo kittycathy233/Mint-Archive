@@ -32,6 +32,8 @@ class FlixelState extends FlxTransitionableState
 
 	override public function create():Void
 	{
+		FlxG.updateFramerate = FlxG.drawFramerate = 120;
+        FlxG.autoPause = false;
 
 		FlxG.cameras.bgColor = 0xff000000;
 

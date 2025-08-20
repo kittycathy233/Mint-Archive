@@ -16,6 +16,8 @@ import openfl.geom.Rectangle;
 import starling.events.Event;
 
 import debug.FPSCounter;
+import debug.TransitionManager;
+import debug.TransitionSubState.TransitionType;
 
 class Main extends Sprite {
     private var background:Sprite;
@@ -120,14 +122,15 @@ class Main extends Sprite {
     private function onFlixelClick(e:MouseEvent):Void {
         trace("Launching Flixel game");
         destroyUI();
+        flixelGame = new FlxGame(1920, 1080, FlixelState, 120);
+        FlxG.autoPause = false;
         
-		// 创建Flixel游戏但不立即添加到显示列表
-		flixelGame = new FlxGame(1920, 1080, FlixelState);
-		FlxG.autoPause = false;
-		
-		// 先添加Flixel游戏，再添加FPS计数器，确保计数器在最上层
-		addChild(flixelGame);
-		addChild(fpsCounter); // 重新添加FPS计数器到显示列表
+        addChild(flixelGame);
+        addChild(fpsCounter);
+        
+        haxe.Timer.delay(function() {
+            TransitionManager.switchState(FlixelState, SLIDE_LEFT);
+        }, 100);
     }
 
 	private function destroyUI():Void {
