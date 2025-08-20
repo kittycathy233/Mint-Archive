@@ -29,7 +29,7 @@
 
 package;
 
-import examples.Flixel.FlixelState;
+import examples.flixel.FlixelState;
 import flixel.FlxG;
 import flixel.FlxGame;
 import openfl.display.Sprite;

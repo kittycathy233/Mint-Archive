@@ -1,5 +1,6 @@
-package examples.Flixel;
+package examples.flixel;
 
+import flixel.addons.transition.FlxTransitionableState;
 import flixel.ui.FlxButton;
 import flixel.group.FlxSpriteGroup;
 import flixel.FlxSprite;
@@ -15,7 +16,7 @@ import flixel.FlxG;
 import flixel.FlxState;
 import flixel.text.FlxText;
 
-class FlixelState extends FlxState
+class FlixelState extends FlxTransitionableState
 {
 	var spineSprite:SkeletonSprite;
 	var sprite:FlxSprite;

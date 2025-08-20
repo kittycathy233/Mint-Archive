@@ -17,6 +17,7 @@
 	<haxelib name="openfl" version="9.4.1"/>
 	<haxelib name="starling" version="2.7.1"/>
 	<haxelib name="flixel" version="6.1.0"/>
+	<haxelib name="flixel-addons" version="3.3.2"/>
 	<haxelib name="spine-haxe" version="4.2.7"/>
 
 	<!-- Multi Platform -->

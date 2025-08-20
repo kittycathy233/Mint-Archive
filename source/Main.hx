@@ -1,6 +1,6 @@
 package;
 
-import examples.Flixel.FlixelState;
+import examples.flixel.FlixelState;
 //import starlingExamples.BasicExample;
 //import starlingExamples.Scene.SceneManager;
 //import starling.core.Starling;
@@ -119,8 +119,8 @@ class Main extends Sprite {
 
     private function onFlixelClick(e:MouseEvent):Void {
         trace("Launching Flixel game");
-		destroyUI();
-		
+        destroyUI();
+        
 		// 创建Flixel游戏但不立即添加到显示列表
 		flixelGame = new FlxGame(1920, 1080, FlixelState);
 		FlxG.autoPause = false;
