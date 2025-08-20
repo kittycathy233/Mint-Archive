@@ -30,9 +30,9 @@
 package;
 
 import flixelExamples.FlixelState;
-import starlingExamples.BasicExample;
-import starlingExamples.Scene.SceneManager;
-import starling.core.Starling;
+//import starlingExamples.BasicExample;
+//import starlingExamples.Scene.SceneManager;
+//import starling.core.Starling;
 import flixel.FlxG;
 import flixel.FlxGame;
 
@@ -44,13 +44,15 @@ import openfl.events.MouseEvent;
 import openfl.geom.Rectangle;
 import starling.events.Event;
 
+import debug.FPSCounter;
+
 class Main extends Sprite {
     private var background:Sprite;
-	private var flixelButton:Sprite;
-    private var starlingButton:Sprite;
-	private var uiContainer:Sprite;
+    private var flixelButton:Sprite;
+    private var uiContainer:Sprite;
+    private var fpsCounter:FPSCounter;
 
-	private static inline var ratio = 4;
+    private static inline var ratio = 4;
     private static inline var STAGE_WIDTH:Int = 100 * ratio;
     private static inline var STAGE_HEIGHT:Int = 200 * ratio;
     private static inline var BUTTON_WIDTH:Int = 80 * ratio;
@@ -82,13 +84,17 @@ class Main extends Sprite {
         flixelButton = createButton("Flixel", 0xFF0000);
         uiContainer.addChild(flixelButton);
 
-        starlingButton = createButton("Starling", 0x00FF00);
-        uiContainer.addChild(starlingButton);
+        // starlingButton = createButton("Starling", 0x00FF00);
+        // uiContainer.addChild(starlingButton);
 
         positionButtons();
 
         flixelButton.addEventListener(MouseEvent.CLICK, onFlixelClick);
-        starlingButton.addEventListener(MouseEvent.CLICK, onStarlingClick);
+        // starlingButton.addEventListener(MouseEvent.CLICK, onStarlingClick);
+
+        // 添加FPS计数器
+        fpsCounter = new FPSCounter(10, 10);
+        addChild(fpsCounter);
     }
 
     private function createButton(label:String, color:Int):Sprite {
@@ -117,14 +123,15 @@ class Main extends Sprite {
 	}
 
     private function positionButtons():Void {
-        var totalHeight = (BUTTON_HEIGHT * 2) + BUTTON_SPACING;
+        // var totalHeight = (BUTTON_HEIGHT * 2) + BUTTON_SPACING;
+        var totalHeight = BUTTON_HEIGHT;
         var startY = (STAGE_HEIGHT - totalHeight) / 2;
 
         flixelButton.x = (STAGE_WIDTH - BUTTON_WIDTH) / 2;
-        flixelButton.y = startY + BUTTON_HEIGHT + BUTTON_SPACING;
+        flixelButton.y = startY;
 
-        starlingButton.x = (STAGE_WIDTH - BUTTON_WIDTH) / 2;
-        starlingButton.y = startY;
+        // starlingButton.x = (STAGE_WIDTH - BUTTON_WIDTH) / 2;
+        // starlingButton.y = startY;
     }
 
 	private function centerUI():Void {
@@ -145,31 +152,38 @@ class Main extends Sprite {
 
 	private function destroyUI():Void {
         flixelButton.removeEventListener(MouseEvent.CLICK, onFlixelClick);
-        starlingButton.removeEventListener(MouseEvent.CLICK, onStarlingClick);
+        // starlingButton.removeEventListener(MouseEvent.CLICK, onStarlingClick);
         stage.removeEventListener(Event.RESIZE, onResize);
 
         removeChild(uiContainer);
 
         background = null;
         flixelButton = null;
-        starlingButton = null;
+        // starlingButton = null;
         uiContainer = null;
+
+        if (fpsCounter != null) {
+            removeChild(fpsCounter);
+            fpsCounter = null;
+        }
     }
 
-	private var starlingSingleton:Starling;
-    private function onStarlingClick(e:MouseEvent):Void {
-        trace("Launching Starling game");
-		starlingSingleton = new Starling(starling.display.Sprite, stage, new Rectangle(0, 0, 1920, 1080));
-		starlingSingleton.supportHighResolutions = true;
-		starlingSingleton.addEventListener(Event.ROOT_CREATED, onStarlingRootCreated);
-    }
+    // private var starlingSingleton:Starling;
+    // private function onStarlingClick(e:MouseEvent):Void {
+    //     trace("Launching Starling game");
+    //     starlingSingleton = new Starling(starling.display.Sprite, stage, new Rectangle(0, 0, 1920, 1080));
+    //     starlingSingleton.supportHighResolutions = true;
+    //     starlingSingleton.addEventListener(Event.ROOT_CREATED, onStarlingRootCreated);
+    // }
 
-	private function onStarlingRootCreated(event:Event):Void {
-		destroyUI();
-		starlingSingleton.removeEventListener(Event.ROOT_CREATED, onStarlingRootCreated);
-		starlingSingleton.start();
-		Starling.current.stage.color = 0x000000;
+    // private function onStarlingRootCreated(event:Event):Void {
+    //     destroyUI();
+    //     starlingSingleton.removeEventListener(Event.ROOT_CREATED, onStarlingRootCreated);
+    //     starlingSingleton.start();
+    //     Starling.current.stage.color = 0x000000;
 
-		SceneManager.getInstance().switchScene(new BasicExample());
-	}
+    //     SceneManager.getInstance().switchScene(new BasicExample());
+    // }
+//}
+	//}
 }
