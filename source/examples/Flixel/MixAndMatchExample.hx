@@ -1,4 +1,4 @@
-package flixelExamples;
+package examples.Flixel;
 
 
 import spine.Skin;

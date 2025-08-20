@@ -1,4 +1,4 @@
-package flixelExamples;
+package examples.Flixel;
 
 import flixel.ui.FlxButton;
 import flixel.group.FlxSpriteGroup;
@@ -46,7 +46,10 @@ class FlixelState extends FlxState
 
 		// Instantiate the SkeletonSprite
 		var qingyetest = new SkeletonSprite(skeletondata, animationStateData);
+		// 设置主要动画在轨道0
 		qingyetest.state.setAnimationByName(0, "19", true);
+		// 设置光环动画在轨道1
+		qingyetest.state.setAnimationByName(1, "Idle_01", true);
 		qingyetest.screenCenter(X);
 		qingyetest.x -= 500;
 		//qingyetest.state.addAnimationByName(0, "19", true);
@@ -60,7 +63,10 @@ class FlixelState extends FlxState
 		var skeletondata2 = SkeletonData.from(skeletonFile2, atlas2);
 		var animationStateData2 = new AnimationStateData(skeletondata2);
 		var miyutest = new SkeletonSprite(skeletondata2, animationStateData2);
+		// 设置主要动画在轨道0
 		miyutest.state.setAnimationByName(0, "09", true);
+		// 设置光环动画在轨道1
+		miyutest.state.setAnimationByName(1, "Idle_01", true);
 		miyutest.screenCenter(X);
 		miyutest.x += 500;
 		add(miyutest);

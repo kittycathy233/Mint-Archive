@@ -1,4 +1,4 @@
-package flixelExamples;
+package examples.Flixel;
 
 
 import spine.Skin;
@@ -12,25 +12,24 @@ import spine.SkeletonData;
 import spine.animation.AnimationStateData;
 import spine.atlas.TextureAtlas;
 
-class TankExample extends FlxState {
+class CloudPotExample extends FlxState {
 	var loadBinary = true;
 
 	override public function create():Void {
 		FlxG.cameras.bgColor = 0xffa1b2b0;
 
-		var button = new FlxButton(0, 0, "Next scene", () -> FlxG.switchState(() -> new VineExample()));
+		var button = new FlxButton(0, 0, "Next scene", () -> FlxG.switchState(() -> new AnimationBoundExample()));
 		button.setPosition(FlxG.width * .75, FlxG.height / 10);
 		add(button);
 
-		var atlas = new TextureAtlas(Assets.getText("assets/tank.atlas"), new FlixelTextureLoader("assets/tank.atlas"));
-		var data = SkeletonData.from(loadBinary ? Assets.getBytes("assets/tank-pro.skel") : Assets.getText("assets/tank-pro.json"), atlas, .125);
+		var atlas = new TextureAtlas(Assets.getText("assets/cloud-pot.atlas"), new FlixelTextureLoader("assets/cloud-pot.atlas"));
+		var data = SkeletonData.from(loadBinary ? Assets.getBytes("assets/cloud-pot.skel") : Assets.getText("assets/cloud-pot.json"), atlas, .25);
 		var animationStateData = new AnimationStateData(data);
 		animationStateData.defaultMix = 0.25;
 
 		var skeletonSprite = new SkeletonSprite(data, animationStateData);
-		var animation = skeletonSprite.state.setAnimationByName(0, "drive", true).animation;
-		skeletonSprite.setBoundingBox(animation);
 		skeletonSprite.screenCenter();
+		skeletonSprite.state.setAnimationByName(0, "playing-in-the-rain", true);
 		add(skeletonSprite);
 
 		super.create();

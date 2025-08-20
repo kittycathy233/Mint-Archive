@@ -1,4 +1,4 @@
-package flixelExamples;
+package examples.Flixel;
 
 
 import spine.Skin;
@@ -12,23 +12,23 @@ import spine.SkeletonData;
 import spine.animation.AnimationStateData;
 import spine.atlas.TextureAtlas;
 
-class VineExample extends FlxState {
+class TankExample extends FlxState {
 	var loadBinary = true;
 
 	override public function create():Void {
 		FlxG.cameras.bgColor = 0xffa1b2b0;
 
-		var button = new FlxButton(0, 0, "Next scene", () -> FlxG.switchState(() -> new SackExample()));
+		var button = new FlxButton(0, 0, "Next scene", () -> FlxG.switchState(() -> new VineExample()));
 		button.setPosition(FlxG.width * .75, FlxG.height / 10);
 		add(button);
 
-		var atlas = new TextureAtlas(Assets.getText("assets/vine.atlas"), new FlixelTextureLoader("assets/vine.atlas"));
-		var data = SkeletonData.from(loadBinary ? Assets.getBytes("assets/vine-pro.skel") : Assets.getText("assets/vine-pro.json"), atlas, .4);
+		var atlas = new TextureAtlas(Assets.getText("assets/tank.atlas"), new FlixelTextureLoader("assets/tank.atlas"));
+		var data = SkeletonData.from(loadBinary ? Assets.getBytes("assets/tank-pro.skel") : Assets.getText("assets/tank-pro.json"), atlas, .125);
 		var animationStateData = new AnimationStateData(data);
 		animationStateData.defaultMix = 0.25;
 
 		var skeletonSprite = new SkeletonSprite(data, animationStateData);
-		var animation = skeletonSprite.state.setAnimationByName(0, "grow", true).animation;
+		var animation = skeletonSprite.state.setAnimationByName(0, "drive", true).animation;
 		skeletonSprite.setBoundingBox(animation);
 		skeletonSprite.screenCenter();
 		add(skeletonSprite);

@@ -27,7 +27,7 @@
  * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *****************************************************************************/
 
-package flixelExamples;
+package examples.Flixel;
 
 import flixel.ui.FlxButton;
 import flixel.FlxG;

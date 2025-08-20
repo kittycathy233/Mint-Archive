@@ -1,35 +1,6 @@
-/******************************************************************************
- * Spine Runtimes License Agreement
- * Last updated July 28, 2023. Replaces all prior versions.
- *
- * Copyright (c) 2013-2023, Esoteric Software LLC
- *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software or
- * otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
- * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
- * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*****************************************************************************/
-
 package;
 
-import flixelExamples.FlixelState;
+import examples.Flixel.FlixelState;
 //import starlingExamples.BasicExample;
 //import starlingExamples.Scene.SceneManager;
 //import starling.core.Starling;
@@ -51,6 +22,9 @@ class Main extends Sprite {
     private var flixelButton:Sprite;
     private var uiContainer:Sprite;
     private var fpsCounter:FPSCounter;
+    
+    // 添加一个变量来跟踪Flixel游戏实例
+    private var flixelGame:FlxGame;
 
     private static inline var ratio = 4;
     private static inline var STAGE_WIDTH:Int = 100 * ratio;
@@ -146,8 +120,14 @@ class Main extends Sprite {
     private function onFlixelClick(e:MouseEvent):Void {
         trace("Launching Flixel game");
 		destroyUI();
-		addChild(new FlxGame(1920, 1080, FlixelState));
+		
+		// 创建Flixel游戏但不立即添加到显示列表
+		flixelGame = new FlxGame(1920, 1080, FlixelState);
 		FlxG.autoPause = false;
+		
+		// 先添加Flixel游戏，再添加FPS计数器，确保计数器在最上层
+		addChild(flixelGame);
+		addChild(fpsCounter); // 重新添加FPS计数器到显示列表
     }
 
 	private function destroyUI():Void {
@@ -161,11 +141,6 @@ class Main extends Sprite {
         flixelButton = null;
         // starlingButton = null;
         uiContainer = null;
-
-        if (fpsCounter != null) {
-            removeChild(fpsCounter);
-            fpsCounter = null;
-        }
     }
 
     // private var starlingSingleton:Starling;

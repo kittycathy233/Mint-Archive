@@ -1,4 +1,4 @@
-package flixelExamples;
+package examples.Flixel;
 
 
 import spine.Skin;
@@ -12,24 +12,25 @@ import spine.SkeletonData;
 import spine.animation.AnimationStateData;
 import spine.atlas.TextureAtlas;
 
-class SnowglobeExample extends FlxState {
+class SackExample extends FlxState {
 	var loadBinary = false;
 
 	override public function create():Void {
 		FlxG.cameras.bgColor = 0xffa1b2b0;
 
-		var button = new FlxButton(0, 0, "Next scene", () -> FlxG.switchState(() -> new CloudPotExample()));
+		var button = new FlxButton(0, 0, "Next scene", () -> FlxG.switchState(() -> new CelestialCircusExample()));
 		button.setPosition(FlxG.width * .75, FlxG.height / 10);
 		add(button);
 
-		var atlas = new TextureAtlas(Assets.getText("assets/snowglobe.atlas"), new FlixelTextureLoader("assets/snowglobe.atlas"));
-		var data = SkeletonData.from(loadBinary ? Assets.getBytes("assets/snowglobe-pro.skel") : Assets.getText("assets/snowglobe-pro.json"), atlas, .125);
+		var atlas = new TextureAtlas(Assets.getText("assets/sack.atlas"), new FlixelTextureLoader("assets/sack.atlas"));
+		var data = SkeletonData.from(loadBinary ? Assets.getBytes("assets/sack-pro.skel") : Assets.getText("assets/sack-pro.json"), atlas, .25);
 		var animationStateData = new AnimationStateData(data);
 		animationStateData.defaultMix = 0.25;
 
 		var skeletonSprite = new SkeletonSprite(data, animationStateData);
 		skeletonSprite.screenCenter();
-		skeletonSprite.state.setAnimationByName(0, "shake", true);
+		skeletonSprite.x -= 100;
+		skeletonSprite.state.setAnimationByName(0, "cape-follow-example", true);
 		add(skeletonSprite);
 
 		super.create();
