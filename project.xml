@@ -6,6 +6,9 @@
 	<app main="Main" path="export" file="Mint Archive" />
 	<!-- <app main="MainStarling" path="export" file="SpineHaxeExample" /> -->
 	<!-- <app main="MainFlixel" path="export" file="SpineHaxeExample" /> -->
+	<icon path="assets/images/icon.png" size="16" />
+	<icon path="assets/images/icon.png" size="32" />
+	<icon path="assets/images/icon.png" size="64" />
 
 	<!-- Window -->
 	<window width="1600" height="900" background="#000000" fps="120" />
