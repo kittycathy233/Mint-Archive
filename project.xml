@@ -6,14 +6,14 @@
 	<app main="Main" path="export" file="Mint Archive" />
 	<!-- <app main="MainStarling" path="export" file="SpineHaxeExample" /> -->
 	<!-- <app main="MainFlixel" path="export" file="SpineHaxeExample" /> -->
-	<icon path="assets/images/icon.png" size="16" />
-	<icon path="assets/images/icon.png" size="32" />
-	<icon path="assets/images/icon.png" size="64" />
+	<icon path="assets/images/game/icon.png" size="16" />
+	<icon path="assets/images/game/icon.png" size="32" />
+	<icon path="assets/images/game/icon.png" size="64" />
 
 	<!-- Window -->
-	<window width="1600" height="900" background="#000000" fps="120" />
+	<window width="1280" height="720" background="#000000" fps="120" />
 	<window hardware="true" allow-shaders="true" require-shaders="true" depth-buffer="true" stencil-buffer="true" />
-	<window fullscreen="false" resizable="true" borderless="false" vsync="false" allow-high-dpi="true"/>
+	<window fullscreen="false" borderless="false" vsync="false" allow-high-dpi="true"/>
 	<window orientation="portrait" />
 
 	<!-- Lib -->
@@ -22,18 +22,28 @@
 	<haxelib name="flixel" version="6.1.0"/>
 	<haxelib name="flixel-addons" version="3.3.2"/>
 	<haxelib name="spine-haxe" version="4.2.7"/>
+	<haxelib name="hxvlc" version="2.2.2"/>
 
 	<!-- Multi Platform -->
 
 
 	<!-- Assets -->
 	<source path="source" />
-	<assets path="assets" rename="assets" />
-	<assets path="assets" include="*.skel" rename="assets" type="binary" />
+	<assets path="assets" include="*" type="binary" />
+
+	<assets path="assets/images" type="image"/>
+	<assets path="assets/spr"/>
+	<assets path="assets/fonts"/>
+	<assets path="assets/sounds" type="sound"/>
+	<assets path="assets/music" type="music"/>
+	<assets path="assets/videos"/>
 
 
 	<!-- TESTING Language -->
 	<language name="en-US" />
 	<language name="zh-CN" />
+
+	<!-- LibVLC Logging for hxCodec -->
+	<haxedef name="HXC_LIBVLC_LOGGING" if="debug" />
 
 </project>

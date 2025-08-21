@@ -5,14 +5,14 @@ import flixel.FlxState;
 import debug.TransitionSubState.TransitionType;
 
 class TransitionManager {
-    public static function switchState(nextState:Class<FlxState>, type:TransitionType = FADE):Void {
+    public static function switchState(nextState:Class<FlxState>, type:TransitionType = FADE, duration:Float = 0.5):Void {
         var curState = FlxG.state;
         
         // 创建转场入场效果
-        var transIn = new TransitionSubState(type, false, function() {
+        var transIn = new TransitionSubState(type, false, duration, function() {
             FlxG.switchState(Type.createInstance(nextState, []));
             // 切换后创建转场出场效果
-            var transOut = new TransitionSubState(type, true);
+            var transOut = new TransitionSubState(type, true, duration);
             FlxG.state.openSubState(transOut);
         });
         

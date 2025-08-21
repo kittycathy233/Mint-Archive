@@ -18,11 +18,13 @@ class TransitionSubState extends FlxSubState {
     var onFinish:Void->Void;
     var overlay:FlxSprite;
     var isOut:Bool;
+    var duration:Float;
     
-    public function new(type:TransitionType, out:Bool, ?onFinishCallback:Void->Void) {
+    public function new(type:TransitionType, out:Bool, duration:Float = 0.5, ?onFinishCallback:Void->Void) {
         super();
         this.onFinish = onFinishCallback;
         this.isOut = out;
+        this.duration = duration;
         
         overlay = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
         add(overlay);
@@ -41,14 +43,14 @@ class TransitionSubState extends FlxSubState {
     
     private function setupFade():Void {
         overlay.alpha = isOut ? 1 : 0;
-        FlxTween.tween(overlay, {alpha: isOut ? 0 : 1}, 0.5, {
+        FlxTween.tween(overlay, {alpha: isOut ? 0 : 1}, duration, {
             onComplete: finishTransition
         });
     }
     
     private function setupSlideLeft():Void {
         overlay.x = isOut ? 0 : FlxG.width;
-        FlxTween.tween(overlay, {x: isOut ? -FlxG.width : 0}, 0.5, {
+        FlxTween.tween(overlay, {x: isOut ? -FlxG.width : 0}, duration, {
             ease: FlxEase.quartInOut,
             onComplete: finishTransition
         });
@@ -56,7 +58,7 @@ class TransitionSubState extends FlxSubState {
     
     private function setupSlideRight():Void {
         overlay.x = isOut ? 0 : -FlxG.width;
-        FlxTween.tween(overlay, {x: isOut ? FlxG.width : 0}, 0.5, {
+        FlxTween.tween(overlay, {x: isOut ? FlxG.width : 0}, duration, {
             ease: FlxEase.quartInOut,
             onComplete: finishTransition
         });
@@ -67,7 +69,7 @@ class TransitionSubState extends FlxSubState {
         overlay.scale.set(scale, scale);
         overlay.updateHitbox();
         overlay.screenCenter();
-        FlxTween.tween(overlay.scale, {x: isOut ? 0 : 1, y: isOut ? 0 : 1}, 0.5, {
+        FlxTween.tween(overlay.scale, {x: isOut ? 0 : 1, y: isOut ? 0 : 1}, duration, {
             ease: FlxEase.quartInOut,
             onComplete: finishTransition
         });
