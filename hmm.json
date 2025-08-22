@@ -39,6 +39,11 @@
       "name": "utest",
       "type": "haxelib",
       "version": "1.13.2"
+    },
+    {
+      "name": "hscript",
+      "type": "haxelib",
+      "version": "2.6.0"
     }
   ]
 }

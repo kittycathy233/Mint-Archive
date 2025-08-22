@@ -15,5 +15,7 @@ import flixel.group.FlxSpriteGroup;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.addons.transition.FlxTransitionableState;
 
+import options.OptionsState;
+import player.MainMenuState;
 
 using StringTools;

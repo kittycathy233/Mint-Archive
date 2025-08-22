@@ -18,15 +18,15 @@ import flixel.text.FlxText;
 import debug.TransitionManager;
 import debug.TransitionSubState.TransitionType;
 import player.MainMenuState;
+import utils.SettingsData;
 
 class FlixelState extends FlxState
 {
 	override public function create():Void
 	{
-		FlxG.updateFramerate = FlxG.drawFramerate = 120;
-        FlxG.autoPause = false;
-
 		FlxG.cameras.bgColor = 0xff000000;
+		FlxG.updateFramerate = FlxG.drawFramerate = 120;
+        FlxG.autoPause = SettingsData.instance.autoPause;
 
 		var atlasFile = Assets.getText("assets/spr/BlueArchive/CH0288_spr.atlas");
 		var skeletonFile = Assets.getBytes("assets/spr/BlueArchive/CH0288_spr.skel");
@@ -65,9 +65,10 @@ class FlixelState extends FlxState
 		var menuButton = new FlxButton(0, 0, "Main Menu", () -> {
 			TransitionManager.switchState(MainMenuState);
 		});
-		menuButton.setPosition(FlxG.width - menuButton.width - 20, 20);
-		menuButton.scale.set(1.5, 1.5);
+		menuButton.setPosition(FlxG.width - menuButton.width - 100, 50);
 		menuButton.updateHitbox();
+		menuButton.label.scale.set(2, 2);
+		menuButton.scale.set(2, 2);
 		add(menuButton);
 
 		super.create();

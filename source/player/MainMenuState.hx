@@ -23,11 +23,15 @@ import flixel.math.FlxRect;
 import openfl.geom.Rectangle;
 import openfl.display.Shape;
 import openfl.geom.Point;
+import utils.SettingsData;
+import options.OptionsState;
 
 class MainMenuState extends FlxState
 {
     private var playButton:FlxButton;
-    private var reisaButton:FlxButton; // 添加Reisa按钮
+    private var reisaButton:FlxButton;
+    private var settingsButton:FlxButton;
+
     private var bgMusic:flixel.sound.FlxSound;
     private var video:FlxVideoSprite;
     private var isTransitioning:Bool = false; // 防止多次点击
@@ -49,14 +53,42 @@ class MainMenuState extends FlxState
     private var videoPath:String = "assets/videos/title.mp4";
     private var musicPath:String = "assets/music/Theme_01.ogg";
 
+    private var logo:FlxSprite;
+
     override public function create():Void 
     {
-        FlxG.updateFramerate = FlxG.drawFramerate = 120;
+        SettingsData.init();
+        SettingsData.instance.load();
+        FlxG.autoPause = SettingsData.instance.autoPause;
 
         super.create();
 
+        // 调试输出当前标题主题
+        trace("Current title theme: " + SettingsData.instance.titleTheme);
+
         video = new FlxVideoSprite(0, 0);
-        video.antialiasing = true;
+        video.antialiasing = SettingsData.instance.antialiasing;
+
+		switch (SettingsData.instance.titleTheme) {
+			case "1st PV":
+				videoPath = "assets/videos/title.mp4";
+			case "2nd PV":
+				videoPath = "assets/videos/title_2nd_1.mp4";
+			case "3rd PV":
+				videoPath = "assets/videos/title_3rd_1.mp4";
+			case "4th PV":
+				videoPath = "assets/videos/title_4nd_1.mp4";
+			case "4th PV_2":
+				videoPath = "assets/videos/title_4nd_2.mp4";
+			case "4.5th PV":
+				videoPath = "assets/videos/title_4nd_Ep.mp4";
+			case "5th PV":
+				videoPath = "assets/videos/title_5th_1.mp4";
+			case "Custom":
+                trace('WIP: Custom title theme video path');
+			default:
+				videoPath = "assets/videos/title.mp4";
+		}
 
         // 视频格式设置完成时的回调
         video.bitmap.onFormatSetup.add(function():Void {
@@ -88,29 +120,69 @@ class MainMenuState extends FlxState
         if (videoPath != "" && video.load(videoPath))
             FlxTimer.wait(0.001, () -> video.play());
 
+        switch (SettingsData.instance.titleTheme) {
+			case "1st PV":
+                musicPath = "assets/music/Theme_01.ogg";
+			case "2nd PV":
+                musicPath = "assets/music/Theme_42_Title.ogg";
+			case "3rd PV":
+				musicPath = "assets/music/Theme_271_Title.ogg";
+			case "4th PV":
+				musicPath = "assets/music/4thPV.ogg";
+			case "4th PV_2":
+				musicPath = "assets/music/Theme_59_Title.ogg";
+			case "4.5th PV":
+				musicPath = "assets/music/Theme_154_Title.ogg";
+			case "5th PV":
+				musicPath = "assets/music/Theme_152_Title.ogg";
+			case "Custom":
+                trace('WIP: Custom title theme audio path');
+			default:
+				musicPath = "assets/music/Theme_01.ogg";
+		}
+
         // 播放背景音乐 - 使用您设置的音频路径
         if (musicPath != "") {
             bgMusic = FlxG.sound.play(musicPath, 0.5, true);
             bgMusic.persist = true; // 确保在状态切换时音乐不会停止
         }
 
-        playButton = new FlxButton(0, 0, "Play", onPlayClick);
-        playButton.scale.set(2, 2);
+        playButton = new FlxButton(0, 0, "Run TEST", onPlayClick);
         playButton.updateHitbox();
+        playButton.scale.set(2, 2);
+        playButton.label.scale.set(2, 2);
         playButton.screenCenter();
         playButton.y -= 40; // 向上移动一点，为Reisa按钮腾出空间
         add(playButton);
         
         // 添加Reisa按钮
-        reisaButton = new FlxButton(0, 0, "Reisa", onReisaClick);
-        reisaButton.scale.set(2, 2);
+        reisaButton = new FlxButton(0, 0, "Run Reisa Test", onReisaClick);
         reisaButton.updateHitbox();
+        reisaButton.scale.set(2, 2);
+        reisaButton.label.scale.set(2, 2);
         reisaButton.screenCenter();
         reisaButton.y += 40; // 放在Play按钮下方
         add(reisaButton);
         
+		// 添加设置按钮
+		settingsButton = new FlxButton(0, 0, "Settings", onSettingsClick);
+        settingsButton.updateHitbox();
+		settingsButton.scale.set(2, 2);
+        settingsButton.label.scale.set(2, 2);
+		settingsButton.screenCenter();
+		settingsButton.y += 120; // 放在Reisa按钮下方
+		add(settingsButton);
+
         // 创建加载UI元素
         createLoadingUI();
+
+        logo = new FlxSprite(0, 0);
+        logo.loadGraphic("assets/images/game/MArchiveLogo.png");
+        logo.alpha = 0.9;
+        logo.x = FlxG.width - logo.width - 40;
+        logo.y = 20;
+        
+        add(logo);
 
         FlxG.camera.bgColor = 0xFFA2A2A2;
     }
@@ -140,13 +212,13 @@ class MainMenuState extends FlxState
         add(progressText);
         
         // 创建加载文本
-        loadingText = new FlxText(70, progressBar.y - 45, FlxG.width / 2, "(WIP) Loading Assets...", 16);
+        loadingText = new FlxText(70, progressBar.y - 45, FlxG.width / 2, "(WIP) Welcome to Kivotos!", 16);
         loadingText.setFormat(null, 20, FlxColor.WHITE, LEFT);
         add(loadingText);
 
         
         // 初始进度设置为0
-        setProgress(0.233);
+        setProgress(0.07);
     }
     
     private function createAndroidStyleSpinner():Void
@@ -237,94 +309,60 @@ class MainMenuState extends FlxState
         //     setProgress(progressValue + 0.001);
         // }
     }
+	private function transitionToState(targetState:Class<FlxState>, transitionDuration:Float = 1.5):Void {
+		// 防止多次点击
+		if (isTransitioning)
+			return;
+		isTransitioning = true;
 
-    private function onPlayClick():Void
-    {
-        // 防止多次点击
-        if (isTransitioning) return;
-        isTransitioning = true;
-        
-        // 禁用按钮以防止重复点击
-        playButton.active = false;
-        reisaButton.active = false;
-        
-        // 设置转场和淡出的持续时间
-        var transitionDuration:Float = 1.5; // 转场和淡出持续时间（秒）
-        
-        // 淡出音乐（如果有）
-        if (bgMusic != null) {
-            FlxTween.tween(bgMusic, {volume: 0}, transitionDuration, {
-                ease: FlxEase.quadOut,
-                onComplete: function(tween:FlxTween) {
-                    bgMusic.stop();
-                    bgMusic.destroy();
-                    bgMusic = null;
-                }
-            });
-        }
-        
-        // 淡出视频（如果有）
-        if (video != null) {
-            FlxTween.tween(video, {alpha: 0}, transitionDuration, {
-                ease: FlxEase.quadOut,
-                onComplete: function(tween:FlxTween) {
-                    if (video != null) {
-                        video.bitmap.onEndReached.removeAll(); // 移除所有结束事件
-                        video.stop();
-                        video.destroy();
-                        video = null;
-                    }
-                }
-            });
-        }
-        
-        // 同时开始转场动画
-        TransitionManager.switchState(FlixelState, TransitionType.CIRCLE_CLOSE, transitionDuration);
-    }
-    
-    private function onReisaClick():Void
-    {
-        // 防止多次点击
-        if (isTransitioning) return;
-        isTransitioning = true;
-        
-        // 禁用按钮以防止重复点击
-        playButton.active = false;
-        reisaButton.active = false;
-        
-        // 设置转场和淡出的持续时间
-        var transitionDuration:Float = 1.5; // 转场和淡出持续时间（秒）
-        
-        // 淡出音乐（如果有）
-        if (bgMusic != null) {
-            FlxTween.tween(bgMusic, {volume: 0}, transitionDuration, {
-                ease: FlxEase.quadOut,
-                onComplete: function(tween:FlxTween) {
-                    bgMusic.stop();
-                    bgMusic.destroy();
-                    bgMusic = null;
-                }
-            });
-        }
-        
-        // 淡出视频（如果有）
-        if (video != null) {
-            FlxTween.tween(video, {alpha: 0}, transitionDuration, {
-                ease: FlxEase.quadOut,
-                onComplete: function(tween:FlxTween) {
-                    if (video != null) {
-                        video.bitmap.onEndReached.removeAll(); // 移除所有结束事件
-                        video.stop();
-                        video.destroy();
-                        video = null;
-                    }
-                }
-            });
-        }
-        
-        // 同时开始转场动画
-        TransitionManager.switchState(ReisaHome, TransitionType.CIRCLE_CLOSE, transitionDuration);
-    }
+		// 禁用所有按钮以防止重复点击
+		playButton.active = false;
+		reisaButton.active = false;
+		if (settingsButton != null)
+			settingsButton.active = false;
+
+		// 淡出音乐（如果有）
+		if (bgMusic != null) {
+			FlxTween.tween(bgMusic, {volume: 0}, transitionDuration, {
+				ease: FlxEase.quadOut,
+				onComplete: function(tween:FlxTween) {
+					bgMusic.stop();
+					bgMusic.destroy();
+					bgMusic = null;
+				}
+			});
+		}
+
+		// 淡出视频（如果有）
+		if (video != null) {
+			FlxTween.tween(video, {alpha: 0}, transitionDuration, {
+				ease: FlxEase.quadOut,
+				onComplete: function(tween:FlxTween) {
+					if (video != null) {
+						video.bitmap.onEndReached.removeAll();
+						video.stop();
+						video.destroy();
+						video = null;
+					}
+				}
+			});
+		}
+
+		// 同时开始转场动画
+		TransitionManager.switchState(targetState, TransitionType.CIRCLE_CLOSE, transitionDuration);
+	}
+
+	private function onPlayClick():Void {
+		transitionToState(FlixelState);
+	}
+
+	private function onReisaClick():Void {
+		transitionToState(ReisaHome);
+	}
+
+	private function onSettingsClick():Void {
+		transitionToState(OptionsState, 1.0);
+	}
     
     override public function destroy():Void
     {

@@ -13,6 +13,7 @@ import openfl.Assets;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.FlxSubState;
+import flixel.group.FlxGroup;
 #end
 
 class FPSCounter extends Sprite {
@@ -59,16 +60,27 @@ class FPSCounter extends Sprite {
         if (visible) {
             // 获取当前状态和子状态信息
             var stateInfo:String = "";
+            var objectCount:Int = 0;
+            
             #if flixel
             var currentState:FlxState = FlxG.state;
             var currentSubState:FlxSubState = FlxG.state.subState;
             
             if (currentState != null) {
                 stateInfo = "State: " + Type.getClassName(Type.getClass(currentState));
+                
+                // 计算状态中的对象数量
+                objectCount = countObjectsInState(currentState);
+                stateInfo += " (Objects: " + objectCount + ")";
             }
             
             if (currentSubState != null) {
                 stateInfo += " \nSubState: " + Type.getClassName(Type.getClass(currentSubState));
+                
+                // 计算子状态中的对象数量
+                var subStateObjectCount:Int = countObjectsInState(currentSubState);
+                stateInfo += " (Objects: " + subStateObjectCount + ")";
+                objectCount += subStateObjectCount;
             }
             
             // 添加窗口大小和游戏渲染大小信息
@@ -88,6 +100,30 @@ class FPSCounter extends Sprite {
             drawBackground();
         }
     }
+    
+    #if flixel
+    private function countObjectsInState(state:FlxState):Int {
+        var count:Int = 0;
+        
+        // 递归计算FlxGroup中的对象数量
+        function countGroupMembers(group:FlxGroup):Int {
+            var groupCount:Int = 0;
+            for (member in group.members) {
+                if (member != null) {
+                    groupCount++;
+                    // 如果成员本身也是一个组，递归计算
+                    if (Std.isOfType(member, FlxGroup)) {
+                        groupCount += countGroupMembers(cast member);
+                    }
+                }
+            }
+            return groupCount;
+        }
+        
+        // 状态本身是一个FlxGroup，所以我们可以直接计算其成员
+        return countGroupMembers(state);
+    }
+    #end
     
     private function drawBackground():Void {
         var g:Graphics = background.graphics;

@@ -5,6 +5,7 @@ import flixel.FlxG;
 import flixel.FlxGame;
 import openfl.display.Sprite;
 import debug.FPSCounter;
+import utils.SettingsData;
 
 class Main extends Sprite {
     private var flixelGame:FlxGame;
@@ -12,11 +13,22 @@ class Main extends Sprite {
 
     public function new() {
         super();
+        
+        // Initialize settings before creating the game
+        SettingsData.init();
+        
         flixelGame = new FlxGame(1920, 1080, LogoState, 120);
         FlxG.autoPause = false;
+        
+        // Apply settings
+        SettingsData.instance.apply();
+        
         addChild(flixelGame);
         
-        fpsCounter = new FPSCounter(10, 10);
-        addChild(fpsCounter);
+        // Create FPS counter if enabled
+        if (SettingsData.instance.showFPS) {
+            fpsCounter = new FPSCounter(10, 10);
+            addChild(fpsCounter);
+        }
     }
 }
