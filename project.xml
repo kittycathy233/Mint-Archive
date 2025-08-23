@@ -64,6 +64,8 @@
 	<haxelib name="flixel-ui" version="2.6.4"/>
 	<haxelib name="spine-haxe" version="4.2.7"/>
 	<haxelib name="hxvlc" version="2.2.2"/>
+	<haxelib name="json2object" version="3.11.0"/>
+	<haxelib name="hxjsonast" version="1.1.0"/>
 
 	<!-- Assets -->
 	<source path="source" />

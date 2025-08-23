@@ -44,6 +44,23 @@
       "name": "hscript",
       "type": "haxelib",
       "version": "2.6.0"
+    },
+    {
+      "name": "json2object",
+      "type": "haxelib",
+      "version": "3.11.0"
+    },
+    {
+      "name": "hxjsonast",
+      "type": "haxelib",
+      "version": "1.1.0"
+    },
+    {
+      "name": "spine-haxe",
+      "type": "git",
+      "dir": "spine-haxe",
+      "ref": "cd726af62b8cbf12ba47c6c0f68d8e04451cf162",
+      "url": "https://github.com/EsotericSoftware/spine-runtimes/"
     }
   ]
 }
