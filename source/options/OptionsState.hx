@@ -75,7 +75,7 @@ class OptionsState extends FlxState
         add(bg);
         
         // 播放背景音乐
-        bgMusic = FlxG.sound.play("assets/music/Theme_281.ogg", 0.8, true);
+        bgMusic = FlxG.sound.play("assets/music/Theme_281.ogg", SettingsData.instance.masterVolume * SettingsData.instance.musicVolume * 0.8, true);
         bgMusic.persist = true;
         
         masterVolumeValue = SettingsData.instance.masterVolume;
@@ -251,8 +251,8 @@ class OptionsState extends FlxState
         // Language
         var languageLabel = new FlxText(50, yPos, labelWidth, "Language:", 16);
         add(languageLabel);
-        
-        var languages = ["English", "Spanish", "French", "German", "Japanese"];
+
+        var languages = ["English", "Simplified Chinese", "Japanese"];
         languageDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(languages, true), function(language:String) {
             SettingsData.instance.language = language.toLowerCase();
         });
@@ -262,9 +262,10 @@ class OptionsState extends FlxState
         yPos += 40;
         
         // Resolution
-        var resolutionLabel = new FlxText(50, yPos, labelWidth, "Resolution:", 16);
+        var resolutionLabel = new FlxText(50, yPos, 500, "Resolution: In Development...", 16);
         add(resolutionLabel);
         
+        /*
         var resolutions = ["1280x720", "1920x1080", "2560x1440", "3840x2160"];
         resolutionDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(resolutions, true), function(resolution:String) {
             var parts = resolution.split("x");
@@ -272,6 +273,7 @@ class OptionsState extends FlxState
         });
         resolutionDropdown.selectedLabel = Std.int(SettingsData.instance.resolution.x) + "x" + Std.int(SettingsData.instance.resolution.y);
         add(resolutionDropdown);
+        */
 
         yPos += 40;
         
@@ -362,7 +364,7 @@ class OptionsState extends FlxState
         confirmText.setFormat(null, 42, FlxColor.GREEN, CENTER);
         add(confirmText);
 
-        bgSfx = FlxG.sound.play("assets/sounds/saveoptions.ogg", 0.6, false);
+        bgSfx = FlxG.sound.play("assets/sounds/saveoptions.ogg", SettingsData.instance.masterVolume * SettingsData.instance.sfxVolume * 0.8, false);
 
         FlxTween.tween(confirmText, {alpha: 0}, 2, {onComplete: function(_) {
             remove(confirmText);

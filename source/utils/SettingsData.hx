@@ -9,8 +9,8 @@ class SettingsData
     public static var instance:SettingsData;
     
     public var masterVolume:Float = 1.0;
-    public var musicVolume:Float = 0.7;
-    public var sfxVolume:Float = 0.8;
+    public var musicVolume:Float = 0.6;
+    public var sfxVolume:Float = 0.7;
     public var fullscreen:Bool = false;
     public var resolution:FlxPoint = FlxPoint.get(1280, 720);
     public var showFPS:Bool = true;

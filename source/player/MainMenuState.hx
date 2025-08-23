@@ -7,8 +7,6 @@ import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
-import examples.flixel.FlixelState;
-import examples.ReisaHome;
 import debug.TransitionManager;
 import debug.TransitionSubState.TransitionType;
 import hxvlc.flixel.FlxVideoSprite;
@@ -26,10 +24,16 @@ import openfl.geom.Point;
 import utils.SettingsData;
 import options.OptionsState;
 
+import examples.flixel.FlixelState;
+import examples.ReisaHome;
+import player.TestState;
+import examples.SoraShop;
+
 class MainMenuState extends FlxState
 {
     private var playButton:FlxButton;
     private var reisaButton:FlxButton;
+    private var shopButton:FlxButton;
     private var settingsButton:FlxButton;
 
     private var bgMusic:flixel.sound.FlxSound;
@@ -128,7 +132,7 @@ class MainMenuState extends FlxState
 			case "3rd PV":
 				musicPath = "assets/music/Theme_271_Title.ogg";
 			case "4th PV":
-				musicPath = "assets/music/4thPV.ogg";
+				musicPath = "assets/music/Theme_59.ogg";
 			case "4th PV_2":
 				musicPath = "assets/music/Theme_59_Title.ogg";
 			case "4.5th PV":
@@ -143,7 +147,7 @@ class MainMenuState extends FlxState
 
         // 播放背景音乐 - 使用您设置的音频路径
         if (musicPath != "") {
-            bgMusic = FlxG.sound.play(musicPath, 0.5, true);
+            bgMusic = FlxG.sound.play(musicPath, SettingsData.instance.masterVolume * SettingsData.instance.musicVolume * 0.8, true);
             bgMusic.persist = true; // 确保在状态切换时音乐不会停止
         }
 
@@ -153,6 +157,7 @@ class MainMenuState extends FlxState
         playButton.label.scale.set(2, 2);
         playButton.screenCenter();
         playButton.y -= 40; // 向上移动一点，为Reisa按钮腾出空间
+        playButton.x += 600;
         add(playButton);
         
         // 添加Reisa按钮
@@ -162,7 +167,17 @@ class MainMenuState extends FlxState
         reisaButton.label.scale.set(2, 2);
         reisaButton.screenCenter();
         reisaButton.y += 40; // 放在Play按钮下方
+        reisaButton.x += 600;
         add(reisaButton);
+
+        shopButton = new FlxButton(0, 0, "Run Shop Test", onShopClick);
+        shopButton.updateHitbox();
+        shopButton.scale.set(2, 2);
+        shopButton.label.scale.set(2, 2);
+        shopButton.screenCenter();
+        shopButton.y += 120; // 放在Play按钮下方
+        shopButton.x += 600;
+        add(shopButton);
         
 		// 添加设置按钮
 		settingsButton = new FlxButton(0, 0, "Settings", onSettingsClick);
@@ -170,7 +185,8 @@ class MainMenuState extends FlxState
 		settingsButton.scale.set(2, 2);
         settingsButton.label.scale.set(2, 2);
 		settingsButton.screenCenter();
-		settingsButton.y += 120; // 放在Reisa按钮下方
+		settingsButton.y += 200; // 放在Reisa按钮下方
+        settingsButton.x += 600;
 		add(settingsButton);
 
         // 创建加载UI元素
@@ -178,13 +194,25 @@ class MainMenuState extends FlxState
 
         logo = new FlxSprite(0, 0);
         logo.loadGraphic("assets/images/game/MArchiveLogo.png");
+        logo.scale.set(0.9, 0.9);
         logo.alpha = 0.9;
-        logo.x = FlxG.width - logo.width - 40;
+        logo.x = FlxG.width - logo.width - 20;
         logo.y = 20;
         
         add(logo);
 
         FlxG.camera.bgColor = 0xFFA2A2A2;
+
+        super.create();
+
+		// 版本水印
+		var versionText = new FlxText(0, 0, 0, "v" + Application.current.meta.get('version'), 24);
+		versionText.setFormat(Assets.getFont("assets/fonts/vcr.ttf").fontName, 24, FlxColor.WHITE, RIGHT);
+		versionText.x = FlxG.width - versionText.width - 28;
+		versionText.y = FlxG.height - versionText.height - 28;
+		versionText.alpha = 0.85;
+		add(versionText);
+
     }
     
     private function createLoadingUI():Void
@@ -218,7 +246,7 @@ class MainMenuState extends FlxState
 
         
         // 初始进度设置为0
-        setProgress(0.07);
+        setProgress(0.08);
     }
     
     private function createAndroidStyleSpinner():Void
@@ -353,11 +381,15 @@ class MainMenuState extends FlxState
 	}
 
 	private function onPlayClick():Void {
-		transitionToState(FlixelState);
+		transitionToState(TestState);
 	}
 
 	private function onReisaClick():Void {
 		transitionToState(ReisaHome);
+	}
+
+	private function onShopClick():Void {
+		transitionToState(SoraShop);
 	}
 
 	private function onSettingsClick():Void {

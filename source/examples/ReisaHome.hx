@@ -107,7 +107,7 @@ class ReisaHome extends FlxTransitionableState
         add(zoomText);
         
         // 播放背景音乐
-        bgMusic = FlxG.sound.play("assets/music/Theme_09.ogg", 0.5, true);
+        bgMusic = FlxG.sound.play("assets/music/Theme_09.ogg", SettingsData.instance.masterVolume * SettingsData.instance.musicVolume * 0.8, true);
         bgMusic.persist = true;
 
         super.create();
