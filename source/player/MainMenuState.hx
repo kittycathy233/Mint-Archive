@@ -113,16 +113,30 @@ class MainMenuState extends FlxState
             }
         });
 
-        video.bitmap.onEndReached.add(function() {
-            video.stop();
-            video.play(); // 视频结束后重新播放
-        });
+		video.bitmap.onEndReached.add(function() {
+			#if mobile
+			video.stop();
+            //重新加载视频
+			if (videoPath != "" && video.load(videoPath)) FlxTimer.wait(0.001, () -> video.play());
+			#else
+			video.stop();
+			video.play();
+			#end
+		});
         
         add(video);
 
         // 加载视频 - 使用您设置的视频路径
-        if (videoPath != "" && video.load(videoPath))
-            FlxTimer.wait(0.001, () -> video.play());
+		if (videoPath != "" && video.load(videoPath, #if mobile // 为移动端添加特定的VLC选项
+			[
+				"--codec=avcodec",
+				"--avcodec-hw=any",
+				"--no-drop-late-frames",
+				"--no-skip-frames"
+			] #else null // 桌面端不使用额外选项
+		#end)) {
+			FlxTimer.wait(0.001, () -> video.play());
+		}
 
         switch (SettingsData.instance.titleTheme) {
 			case "1st PV":
