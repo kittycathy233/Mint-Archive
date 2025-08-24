@@ -9,7 +9,9 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.addons.ui.FlxUICheckBox;
 import flixel.addons.ui.FlxUISlider;
 import flixel.addons.ui.FlxUIDropDownMenu;
+import flixel.addons.ui.FlxUINumericStepper;
 import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
 import utils.Conductor;
@@ -33,8 +35,14 @@ class OptionsState extends FlxState
     private var languageDropdown:FlxUIDropDownMenu;
     private var resolutionDropdown:FlxUIDropDownMenu;
     private var titleThemeDropdown:FlxUIDropDownMenu;
+    private var frameRateStepper:FlxUINumericStepper;
+    private var frameRateLabel:FlxText;
     private var applyButton:FlxButton;
     private var resetButton:FlxButton;
+    
+    // 位置变量
+    private var vsyncX:Float;
+    private var frameRateOriginalX:Float;
     
     // 背景元素
     private var bg:FlxSprite;
@@ -62,6 +70,7 @@ class OptionsState extends FlxState
         SettingsData.init();
 
         FlxG.autoPause = SettingsData.instance.autoPause;
+        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
 
         // 初始化Conductor，设置BPM为114
         Conductor.init(114);
@@ -86,7 +95,6 @@ class OptionsState extends FlxState
 
         titleText = new FlxText(0, titleY, FlxG.width, "SETTINGS", 32);
         titleText.setFormat(Assets.getFont("assets/fonts/arturito-slab.ttf").fontName, 60, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-        //trail.defaultTextFormat = new TextFormat(Assets.getFont("assets/fonts/arturito-slab.ttf").fontName, 40, 0xFFFFFF, true);
         titleText.borderSize = 4;
         add(titleText);
 
@@ -115,6 +123,9 @@ class OptionsState extends FlxState
         
         // 设置Conductor的节拍回调
         Conductor.onBeat = onBeat;
+        
+        // 初始更新帧率设置UI状态
+        drawFramerateUI();
     }
     
     private function updateMusicVolume():Void
@@ -209,16 +220,29 @@ class OptionsState extends FlxState
         
         yPos += 40;
         
-        // VSync
+        // VSync - 在同一行添加帧率设置
         var vsyncLabel = new FlxText(50, yPos, labelWidth, "VSync:", 16);
         add(vsyncLabel);
         
+        // 存储VSync的位置
+        vsyncX = controlX;
         vsyncCheckbox = new FlxUICheckBox(controlX, yPos, null, null, "", 100);
         vsyncCheckbox.checked = SettingsData.instance.vsync;
         vsyncCheckbox.callback = function() {
             SettingsData.instance.vsync = vsyncCheckbox.checked;
+            drawFramerateUI();
         };
         add(vsyncCheckbox);
+        
+        // Frame Rate Limit (与VSync在同一行)
+        frameRateLabel = new FlxText(controlX + 120, yPos, labelWidth, "Frame Rate:", 16);
+        add(frameRateLabel);
+        
+        // 存储帧率设置的原位置
+        frameRateOriginalX = controlX + 120;
+        frameRateStepper = new FlxUINumericStepper(controlX + 220, yPos, 10, SettingsData.instance.frameRateLimit, 30, 240, 0);
+        frameRateStepper.name = "frameRateStepper";
+        add(frameRateStepper);
         
         yPos += 40;
         
@@ -289,9 +313,47 @@ class OptionsState extends FlxState
         add(titleThemeDropdown);
     }
     
+    private function drawFramerateUI():Void
+    {
+        var isVsyncEnabled = SettingsData.instance.vsync;
+        
+        if (isVsyncEnabled) {
+            // VSync启用，将帧率设置移动到VSync位置并隐藏
+            FlxTween.tween(frameRateLabel, {x: vsyncX, alpha: 0}, 0.3, {
+                ease: FlxEase.quadOut,
+                onComplete: function(tween:FlxTween) {
+                    frameRateLabel.visible = false;
+                    frameRateLabel.active = false;
+                }
+            });
+            
+            FlxTween.tween(frameRateStepper, {x: vsyncX, alpha: 0}, 0.3, {
+                ease: FlxEase.quadOut,
+                onComplete: function(tween:FlxTween) {
+                    frameRateStepper.visible = false;
+                    frameRateStepper.active = false;
+                }
+            });
+        } else {
+            // VSync禁用，将帧率设置移回原位置并显示
+            frameRateLabel.visible = true;
+            frameRateLabel.active = true;
+            frameRateStepper.visible = true;
+            frameRateStepper.active = true;
+            
+            FlxTween.tween(frameRateLabel, {x: frameRateOriginalX, alpha: 1}, 0.3, {ease: FlxEase.quadOut});
+            FlxTween.tween(frameRateStepper, {x: frameRateOriginalX + 100, alpha: 1}, 0.3, {ease: FlxEase.quadOut});
+        }
+    }
+    
     override public function update(elapsed:Float):Void
     {
         super.update(elapsed);
+        
+        // 检测帧率限制器的值变化
+        if (frameRateStepper != null && frameRateStepper.value != SettingsData.instance.frameRateLimit) {
+            SettingsData.instance.frameRateLimit = Std.int(frameRateStepper.value);
+        }
         
         // 更新Conductor的歌曲位置
         if (bgMusic != null)
@@ -370,6 +432,9 @@ class OptionsState extends FlxState
             remove(confirmText);
             confirmText.destroy();
         }});
+
+        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
+
     }
     
     private function resetSettings():Void
@@ -385,6 +450,7 @@ class OptionsState extends FlxState
         SettingsData.instance.vsync = false;
         SettingsData.instance.autoPause = false;
         SettingsData.instance.titleTheme = "1st PV";
+        SettingsData.instance.frameRateLimit = 60;
         
         // Update UI
         masterVolumeValue = SettingsData.instance.masterVolume;
@@ -395,13 +461,21 @@ class OptionsState extends FlxState
         showFPSCheckbox.checked = SettingsData.instance.showFPS;
         autoPauseCheckbox.checked = SettingsData.instance.autoPause;
         languageDropdown.selectedLabel = "English";
-        resolutionDropdown.selectedLabel = "1280x720";
+        // resolutionDropdown.selectedLabel = "1280x720";
         titleThemeDropdown.selectedLabel = "1st PV";
+        
+        // 更新帧率限制器的值
+        if (frameRateStepper != null) {
+            frameRateStepper.value = SettingsData.instance.frameRateLimit;
+        }
         
         // 强制更新滑块显示
         masterVolumeSlider.value = masterVolumeValue;
         musicVolumeSlider.value = musicVolumeValue;
         sfxVolumeSlider.value = sfxVolumeValue;
+        
+        // 更新帧率UI状态
+        drawFramerateUI();
         
         // 更新音乐音量
         updateMusicVolume();

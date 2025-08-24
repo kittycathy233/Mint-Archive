@@ -90,7 +90,8 @@ class TestState extends FlxState
     {
         // Set background color
         FlxG.cameras.bgColor = 0xff131c1b;
-        
+        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
+
         // 初始化角色数据
         initSpineCharacterData();
         

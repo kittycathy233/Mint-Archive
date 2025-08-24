@@ -19,7 +19,8 @@ class LogoState extends FlxState
     
     override public function create():Void
     {
-        FlxG.updateFramerate = FlxG.drawFramerate = 120;
+        //FlxG.drawFramerate = FlxG.updateFramerate = 120;
+        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
 
         super.create();
         

@@ -47,6 +47,7 @@ class ReisaHome extends FlxTransitionableState
     {
         FlxG.cameras.bgColor = 0xff000000;
         FlxG.autoPause = SettingsData.instance.autoPause;
+        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
 
         var atlasFile = Assets.getText("assets/spr/BlueArchive/CH0167_home.atlas");
         var skeletonFile = Assets.getBytes("assets/spr/BlueArchive/CH0167_home.skel");

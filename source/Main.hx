@@ -24,7 +24,10 @@ class Main extends Sprite {
         SettingsData.instance.apply();
         
         addChild(flixelGame);
-        
+        FlxG.drawFramerate = 120;
+
+        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
+
         // Create FPS counter if enabled
         if (SettingsData.instance.showFPS) {
             fpsCounter = new FPSCounter(10, 10);

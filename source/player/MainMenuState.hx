@@ -64,6 +64,7 @@ class MainMenuState extends FlxState
         SettingsData.init();
         SettingsData.instance.load();
         FlxG.autoPause = SettingsData.instance.autoPause;
+        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
 
         super.create();
 

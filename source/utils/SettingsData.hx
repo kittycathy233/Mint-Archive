@@ -3,6 +3,7 @@ package utils;
 import flixel.FlxG;
 import flixel.math.FlxPoint;
 import flixel.util.FlxSave;
+import flixel.math.FlxMath;
 
 class SettingsData
 {
@@ -19,6 +20,7 @@ class SettingsData
     public var autoPause:Bool = false;
     public var titleTheme:String = "1st PV";
     public var antialiasing:Bool = true;
+    public var frameRateLimit:Int = 60; // 新增帧率限制字段
 
     public function new() {}
     
@@ -47,6 +49,7 @@ class SettingsData
         save.data.autoPause = autoPause;
         save.data.titleTheme = titleTheme;
         save.data.antialiasing = antialiasing;
+        save.data.frameRateLimit = frameRateLimit; // 保存帧率限制
         
         save.flush();
         save.close();
@@ -94,11 +97,12 @@ class SettingsData
             }
         }
         if (save.data.antialiasing != null) antialiasing = save.data.antialiasing;
-
+        if (save.data.frameRateLimit != null) frameRateLimit = save.data.frameRateLimit; // 加载帧率限制
+        
         save.close();
 
         final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
-        FlxG.stage.frameRate = vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : 60;
+        FlxG.stage.frameRate = vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : frameRateLimit;
 
         trace("Settings loaded: titleTheme = " + titleTheme);
     }
@@ -110,8 +114,8 @@ class SettingsData
         FlxG.autoPause = autoPause;
         
         final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
-        FlxG.stage.frameRate = vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : 60;
-        
+        FlxG.updateFramerate = vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : frameRateLimit;
+
         FlxG.save.flush();
     }
 }
