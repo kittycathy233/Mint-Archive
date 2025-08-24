@@ -137,27 +137,31 @@ class SoraShop extends FlxState
 
         // 随机选择登录效果
         selectedIntroType = FlxG.random.int(0, 1);
-        shop.state.setAnimationByName(0, "Idle_01", true);
+        //shop.state.setAnimationByName(0, "Idle_01", true);
 
         if (selectedIntroType == 0) {
             // 第一种效果
-            shop.state.setAnimationByName(1, "Start02_Idle_01", false);
+            shop.state.setAnimationByName(0, "Start02_Idle_01", false);
             currentDialogs = dialogs1;
         } else {
             // 第二种效果
-            shop.state.setAnimationByName(1, "Start01_Idle_01", false);
+            shop.state.setAnimationByName(0, "Start01_Idle_01", false);
             currentDialogs = dialogs2;
         }
-        
+        //shop.state.setAnimationByName(0, "Idle_01", true);
+
 		animationStateData.defaultMix = 0.4;
 
         shop.screenCenter();
         add(shop);
         
         // 创建戳戳碰撞箱
-        hitbox = new FlxSprite(0, 0).makeGraphic(200, 200, FlxColor.fromRGB(255, 255, 255, 100));
+        hitbox = new FlxSprite(0, 0).makeGraphic(95, 140, FlxColor.fromRGB(0, 191, 255, 100));
         hitbox.screenCenter();
-        hitbox.visible = true; // 设置为半透明可见，便于测试
+		hitbox.x -= 67;
+		hitbox.y += 2;
+
+        hitbox.visible = false; // 设置为半透明可见，便于测试
         add(hitbox);
         
         /* 添加鼠标点击事件
@@ -375,7 +379,7 @@ class SoraShop extends FlxState
 			var switchTime:Float = (selectedIntroType == 0) ? 11.05 : 9.5;
 			if (animationTimer >= switchTime) {
 				// 切换动画
-				//shop.state.setAnimationByName(0, "Idle_01", true);
+				shop.state.setAnimationByName(0, "Idle_01", true);
 				hasSwitchedAnimation = true;
 			}
 		}
@@ -415,9 +419,9 @@ class SoraShop extends FlxState
 							dialogText.visible = false;
 						}
 					});
-					//FlxTween.tween(dialogText, {alpha: 0}, 1.0, {
-						//startDelay: 4.0
-					//});
+					FlxTween.tween(dialogText, {alpha: 0}, 1.0, {
+						startDelay: 4.0
+					});
 				}
 			}
 		}
@@ -604,7 +608,7 @@ class SoraShop extends FlxState
 			if (!isTransitioning) {
 				trace("Setting idle animation (fallback)");
 				if (shop != null && shop.state != null) {
-					// shop.state.setAnimationByName(0, "Idle_01", true);
+					shop.state.setAnimationByName(0, "Idle_01", true);
 				}
 			}
 			isPlayingTalk = false;
@@ -630,9 +634,9 @@ class SoraShop extends FlxState
                     dialogText.visible = false;
                 }
             });
-            //FlxTween.tween(dialogText, {alpha: 0}, 1.0, {
-                //startDelay: 3.0
-            //});
+            FlxTween.tween(dialogText, {alpha: 0}, 1.0, {
+                startDelay: 3.0
+            });
         });
     }
     
