@@ -23,34 +23,41 @@ class LogoState extends FlxState
         FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
 
         super.create();
-        
-        logo = new FlxSprite(0, 0);
-        logo.loadGraphic("assets/images/game/icon.png");
-        logo.alpha = 0;
-        logo.screenCenter();
-        add(logo);
-        
-        #if (desktop || mobile)
-            FlxG.sound.play("assets/sounds/bells-logo.ogg", 1, false, null, true, onSoundComplete);
-        #else
-            FlxG.sound.play("assets/sounds/bells-logo.mp3", 1, false, null, true, onSoundComplete);
-        #end
-        
-        // Logo淡入动画
-        FlxTween.tween(logo, {alpha: 1}, 1, {
-            ease: FlxEase.quadIn,
-            onComplete: function(_) {
-                // 等待2秒后淡出
-                new FlxTimer().start(1.5, function(_) {
-                    FlxTween.tween(logo, {alpha: 0}, 1, {
-                        ease: FlxEase.quadOut,
-                        onComplete: function(_) {
-                            if (hasFinished) finishLogo();
-                        }
-                    });
-                });
-            }
-        });
+		#if NO_LOGO
+        hasFinished = true;
+		finishLogo();
+		#else
+		TransitionManager.switchState(MainMenuState, TransitionType.FADE);
+		return;
+		logo = new FlxSprite(0, 0);
+		logo.loadGraphic("assets/images/game/icon.png");
+		logo.alpha = 0;
+		logo.screenCenter();
+		add(logo);
+
+		#if (desktop || mobile)
+		FlxG.sound.play("assets/sounds/bells-logo.ogg", 1, false, null, true, onSoundComplete);
+		#else
+		FlxG.sound.play("assets/sounds/bells-logo.mp3", 1, false, null, true, onSoundComplete);
+		#end
+
+		// Logo淡入动画
+		FlxTween.tween(logo, {alpha: 1}, 1, {
+			ease: FlxEase.quadIn,
+			onComplete: function(_) {
+				// 等待2秒后淡出
+				new FlxTimer().start(1.5, function(_) {
+					FlxTween.tween(logo, {alpha: 0}, 1, {
+						ease: FlxEase.quadOut,
+						onComplete: function(_) {
+							if (hasFinished)
+								finishLogo();
+						}
+					});
+				});
+			}
+		});
+		#end
     }
     
     private function onSoundComplete():Void

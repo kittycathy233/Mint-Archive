@@ -55,8 +55,10 @@
 
 	<!--Disable the Flixel core focus lost screen-->
 	<!--<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />-->
+	<haxedef name="NO_LOGO"/>
 
-	<!-- Lib -->
+	<!--______________________________ Lib ______________________________-->
+
 	<haxelib name="openfl" version="9.4.1"/>
 	<haxelib name="starling" version="2.7.1"/>
 	<haxelib name="flixel" version="6.1.0"/>
@@ -66,6 +68,8 @@
 	<haxelib name="hxvlc" version="2.2.2"/>
 	<haxelib name="json2object" version="3.11.0"/>
 	<haxelib name="hxjsonast" version="1.1.0"/>
+	<haxelib name="grig.audio" />
+	<haxelib name="funkin.vis" />
 
 	<!-- Assets -->
 	<source path="source" />
@@ -77,6 +81,7 @@
 	<assets path="assets/sounds" type="sound"/>
 	<assets path="assets/music" type="music"/>
 	<assets path="assets/videos"/>
+	<assets path="assets/vocals"/>
 
 	<!-- LibVLC Logging for hxCodec -->
 	<haxedef name="HXC_LIBVLC_LOGGING" if="debug" />
