@@ -75,19 +75,19 @@ class MainMenuState extends FlxState
         video.antialiasing = SettingsData.instance.antialiasing;
 
 		switch (SettingsData.instance.titleTheme) {
-			case "1st PV":
+			case "1st_PV":
 				videoPath = "assets/videos/title.mp4";
-			case "2nd PV":
+			case "2nd_PV":
 				videoPath = "assets/videos/title_2nd_1.mp4";
-			case "3rd PV":
+			case "3rd_PV":
 				videoPath = "assets/videos/title_3rd_1.mp4";
-			case "4th PV":
+			case "4th_PV":
 				videoPath = "assets/videos/title_4nd_1.mp4";
-			case "4th PV_2":
+			case "4th_PV_2":
 				videoPath = "assets/videos/title_4nd_2.mp4";
-			case "4.5th PV":
+			case "4.5th_PV":
 				videoPath = "assets/videos/title_4nd_Ep.mp4";
-			case "5th PV":
+			case "5th_PV":
 				videoPath = "assets/videos/title_5th_1.mp4";
 			case "Custom":
                 trace('WIP: Custom title theme video path');
@@ -139,19 +139,19 @@ class MainMenuState extends FlxState
 		}
 
         switch (SettingsData.instance.titleTheme) {
-			case "1st PV":
+			case "1st_PV":
                 musicPath = "assets/music/Theme_01.ogg";
-			case "2nd PV":
+			case "2nd_PV":
                 musicPath = "assets/music/Theme_42_Title.ogg";
-			case "3rd PV":
+			case "3rd_PV":
 				musicPath = "assets/music/Theme_271_Title.ogg";
-			case "4th PV":
+			case "4th_PV":
 				musicPath = "assets/music/Theme_59.ogg";
-			case "4th PV_2":
+			case "4th_PV_2":
 				musicPath = "assets/music/Theme_59_Title.ogg";
-			case "4.5th PV":
+			case "4.5th_PV":
 				musicPath = "assets/music/Theme_154_Title.ogg";
-			case "5th PV":
+			case "5th_PV":
 				musicPath = "assets/music/Theme_152_Title.ogg";
 			case "Custom":
                 trace('WIP: Custom title theme audio path');

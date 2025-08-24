@@ -32,7 +32,7 @@ class OptionsState extends FlxState
     private var vsyncCheckbox:FlxUICheckBox;
     private var showFPSCheckbox:FlxUICheckBox;
     private var autoPauseCheckbox:FlxUICheckBox;
-    private var languageDropdown:FlxUIDropDownMenu;
+    private var languagePlusDropdown:FlxUIDropDownMenu;
     private var resolutionDropdown:FlxUIDropDownMenu;
     private var titleThemeDropdown:FlxUIDropDownMenu;
     private var frameRateStepper:FlxUINumericStepper;
@@ -235,11 +235,11 @@ class OptionsState extends FlxState
         add(vsyncCheckbox);
         
         // Frame Rate Limit (与VSync在同一行)
-        frameRateLabel = new FlxText(controlX + 120, yPos, labelWidth, "Frame Rate:", 16);
+        frameRateLabel = new FlxText(controlX - 50, yPos, labelWidth, "FrameRate:", 16);
         add(frameRateLabel);
         
         // 存储帧率设置的原位置
-        frameRateOriginalX = controlX + 120;
+        frameRateOriginalX = controlX + 50;
         frameRateStepper = new FlxUINumericStepper(controlX + 220, yPos, 10, SettingsData.instance.frameRateLimit, 30, 240, 0);
         frameRateStepper.name = "frameRateStepper";
         add(frameRateStepper);
@@ -272,45 +272,45 @@ class OptionsState extends FlxState
 
         yPos += 40;
 
-        // Language
-        var languageLabel = new FlxText(50, yPos, labelWidth, "Language:", 16);
-        add(languageLabel);
+		// LanguagePlus
+		var languagePlusLabel = new FlxText(50, yPos, labelWidth, "Language:", 16);
+		add(languagePlusLabel);
 
-        var languages = ["English", "Simplified Chinese", "Japanese"];
-        languageDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(languages, true), function(language:String) {
-            SettingsData.instance.language = language.toLowerCase();
-        });
-        languageDropdown.selectedLabel = SettingsData.instance.language.charAt(0).toUpperCase() + SettingsData.instance.language.substr(1);
-        add(languageDropdown);
+		var languagePluss = ["English", "Simplified_Chinese", "Japanese"];
+		languagePlusDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(languagePluss, true), function(languagePlus:String) {
+			SettingsData.instance.languagePlus = languagePlus;
+		});
+
+		languagePlusDropdown.selectedLabel = SettingsData.instance.languagePlus;
+		add(languagePlusDropdown);
         
         yPos += 40;
         
         // Resolution
         var resolutionLabel = new FlxText(50, yPos, 500, "Resolution: In Development...", 16);
         add(resolutionLabel);
-        
-        /*
-        var resolutions = ["1280x720", "1920x1080", "2560x1440", "3840x2160"];
-        resolutionDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(resolutions, true), function(resolution:String) {
-            var parts = resolution.split("x");
-            SettingsData.instance.resolution.set(Std.parseInt(parts[0]), Std.parseInt(parts[1]));
-        });
-        resolutionDropdown.selectedLabel = Std.int(SettingsData.instance.resolution.x) + "x" + Std.int(SettingsData.instance.resolution.y);
-        add(resolutionDropdown);
-        */
-
+ 
         yPos += 40;
         
         // Title Theme
         var titleThemeLabel = new FlxText(50, yPos, labelWidth, "Title Theme:", 16);
         add(titleThemeLabel);
 
-        var titleThemes = ["1st PV", "2nd PV", "3rd PV", "4th PV", "4th PV_2", "4.5th PV", "5th PV"];
+        var titleThemes = ["1st_PV", "2nd_PV", "3rd_PV", "4th_PV", "4th_PV_2", "4.5th_PV", "5th_PV"];
         titleThemeDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(titleThemes, true), function(title:String) {
             SettingsData.instance.titleTheme = title;
         });
         titleThemeDropdown.selectedLabel = SettingsData.instance.titleTheme;
         add(titleThemeDropdown);
+    }
+
+	private function formatlanguagePlusForDisplay(languagePlus:String):String {
+		// 将下划线替换为空格并首字母大写
+		var parts = languagePlus.split("_");
+		for (i in 0...parts.length) {
+			parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].substr(1).toLowerCase();
+		}
+		return parts.join(" ");
     }
     
     private function drawFramerateUI():Void
@@ -327,7 +327,7 @@ class OptionsState extends FlxState
                 }
             });
             
-            FlxTween.tween(frameRateStepper, {x: vsyncX, alpha: 0}, 0.3, {
+            FlxTween.tween(frameRateStepper, {x: vsyncX + 100, alpha: 0}, 0.3, {
                 ease: FlxEase.quadOut,
                 onComplete: function(tween:FlxTween) {
                     frameRateStepper.visible = false;
@@ -342,7 +342,7 @@ class OptionsState extends FlxState
             frameRateStepper.active = true;
             
             FlxTween.tween(frameRateLabel, {x: frameRateOriginalX, alpha: 1}, 0.3, {ease: FlxEase.quadOut});
-            FlxTween.tween(frameRateStepper, {x: frameRateOriginalX + 100, alpha: 1}, 0.3, {ease: FlxEase.quadOut});
+            FlxTween.tween(frameRateStepper, {x: frameRateOriginalX + 130, alpha: 1}, 0.3, {ease: FlxEase.quadOut});
         }
     }
     
@@ -446,10 +446,10 @@ class OptionsState extends FlxState
         SettingsData.instance.fullscreen = false;
         SettingsData.instance.resolution.set(1280, 720);
         SettingsData.instance.showFPS = true;
-        SettingsData.instance.language = "english";
+        SettingsData.instance.languagePlus = "english";
         SettingsData.instance.vsync = false;
         SettingsData.instance.autoPause = false;
-        SettingsData.instance.titleTheme = "1st PV";
+        SettingsData.instance.titleTheme = "1st_PV";
         SettingsData.instance.frameRateLimit = 60;
         
         // Update UI
@@ -460,9 +460,8 @@ class OptionsState extends FlxState
         vsyncCheckbox.checked = SettingsData.instance.vsync;
         showFPSCheckbox.checked = SettingsData.instance.showFPS;
         autoPauseCheckbox.checked = SettingsData.instance.autoPause;
-        languageDropdown.selectedLabel = "English";
-        // resolutionDropdown.selectedLabel = "1280x720";
-        titleThemeDropdown.selectedLabel = "1st PV";
+        languagePlusDropdown.selectedLabel = "English";
+        titleThemeDropdown.selectedLabel = "1st_PV";
         
         // 更新帧率限制器的值
         if (frameRateStepper != null) {

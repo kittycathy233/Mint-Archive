@@ -15,10 +15,10 @@ class SettingsData
     public var fullscreen:Bool = false;
     public var resolution:FlxPoint = FlxPoint.get(1280, 720);
     public var showFPS:Bool = true;
-    public var language:String = "english";
+    public var languagePlus:String = "English";
     public var vsync:Bool = false;
     public var autoPause:Bool = false;
-    public var titleTheme:String = "1st PV";
+    public var titleTheme:String = "1st_PV";
     public var antialiasing:Bool = true;
     public var frameRateLimit:Int = 60; // 新增帧率限制字段
 
@@ -44,17 +44,17 @@ class SettingsData
         save.data.fullscreen = fullscreen;
         save.data.resolution = {x: resolution.x, y: resolution.y};
         save.data.showFPS = showFPS;
-        save.data.language = language;
+        save.data.languagePlus = languagePlus;
         save.data.vsync = vsync;
         save.data.autoPause = autoPause;
         save.data.titleTheme = titleTheme;
         save.data.antialiasing = antialiasing;
-        save.data.frameRateLimit = frameRateLimit; // 保存帧率限制
+        save.data.frameRateLimit = frameRateLimit;
         
         save.flush();
         save.close();
-        
-        trace("Settings saved: titleTheme = " + titleTheme);
+
+        trace("Settings saved:     TitleTheme: " + titleTheme + "   Language: " + languagePlus);
     }
     
     public function load():Void
@@ -72,39 +72,64 @@ class SettingsData
             resolution.y = save.data.resolution.y;
         }
         if (save.data.showFPS != null) showFPS = save.data.showFPS;
-        if (save.data.language != null) language = save.data.language;
+        if (save.data.languagePlus != null) languagePlus = save.data.languagePlus;
         if (save.data.vsync != null) vsync = save.data.vsync;
         if (save.data.autoPause != null) autoPause = save.data.autoPause;
+
         if (save.data.titleTheme != null) {
-            // 修复旧版本中titleTheme被保存为数字的问题
             var themeValue = save.data.titleTheme;
+            themeValue = replaceSpecialChars(themeValue);
+            
+            // 修复titleTheme被保存为数字的问题
             if (themeValue == "6") {
-                titleTheme = "5th PV";
+                titleTheme = "5th_PV";
             } else if (themeValue == "5") {
-                titleTheme = "4.5th PV";
+                titleTheme = "4.5th_PV";
             } else if (themeValue == "4") {
-                titleTheme = "4th PV_2";
+                titleTheme = "4th_PV_2";
             } else if (themeValue == "3") {
-                titleTheme = "4th PV";
+                titleTheme = "4th_PV";
             } else if (themeValue == "2") {
-                titleTheme = "3rd PV";
+                titleTheme = "3rd_PV";
             } else if (themeValue == "1") {
-                titleTheme = "2nd PV";
-            }else if (themeValue == "0") {
-                titleTheme = "1st PV";
+                titleTheme = "2nd_PV";
+            } else if (themeValue == "0") {
+                titleTheme = "1st_PV";
             } else {
                 titleTheme = themeValue;
             }
         }
+        
+		if (save.data.languagePlus != null) {
+			var languageValue = save.data.languagePlus;
+			languageValue = replaceSpecialChars(languageValue);
+
+			if (languageValue == "2") {
+				languagePlus = "Japanese";
+			} else if (languageValue == "1") {
+				languagePlus = "Simplified_Chinese";
+			} else if (languageValue == "0") {
+				languagePlus = "English";
+			} else {
+				languagePlus = languageValue;
+			}
+		}
+        
         if (save.data.antialiasing != null) antialiasing = save.data.antialiasing;
-        if (save.data.frameRateLimit != null) frameRateLimit = save.data.frameRateLimit; // 加载帧率限制
+        if (save.data.frameRateLimit != null) frameRateLimit = save.data.frameRateLimit;
         
         save.close();
 
         final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
         FlxG.stage.frameRate = vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : frameRateLimit;
 
-        trace("Settings loaded: titleTheme = " + titleTheme);
+        trace("Settings loaded:     TitleTheme: " + titleTheme + "   Language: " + languagePlus);
+    }
+    
+    private function replaceSpecialChars(str:String):String
+    {
+        // 替换空格和特殊字符为下划线
+        return ~/[ ~%&\\;:"',<>?#]+/g.replace(str, "_");
     }
     
     public function apply():Void
