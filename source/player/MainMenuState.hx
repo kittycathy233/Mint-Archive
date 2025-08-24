@@ -116,7 +116,6 @@ class MainMenuState extends FlxState
 		video.bitmap.onEndReached.add(function() {
 			#if mobile
 			video.stop();
-            //重新加载视频
 			if (videoPath != "" && video.load(videoPath)) FlxTimer.wait(0.001, () -> video.play());
 			#else
 			video.stop();
@@ -133,7 +132,7 @@ class MainMenuState extends FlxState
 				"--avcodec-hw=any",
 				"--no-drop-late-frames",
 				"--no-skip-frames"
-			] #else null // 桌面端不使用额外选项
+			] #else null
 		#end)) {
 			FlxTimer.wait(0.001, () -> video.play());
 		}
