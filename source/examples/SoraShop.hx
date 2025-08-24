@@ -102,22 +102,18 @@ class SoraShop extends FlxState
     ];
     
     // Talk对话内容
-    private var talkDialogs:Map<Int, String> = [
-        1 => "Text01",
-        2 => "Text02", 
-        3 => "Text03",
-        4 => "Text04",
-        5 => "Text05",
-        6 => "Text06",
-        7 => "Text07"
-    ];
-    
+    private var talkDialogs:Map<Int, String>;
+
     // 当前使用的对话数组
     private var currentDialogs:Array<{text:String, time:Float, cumulative:Bool}>;
 
     private var cumulativeText:String = "";
 
 	private var wasMousePressed:Bool = false;
+	
+	// 用于存储渐隐tween的变量
+	private var dialogBackgroundTween:FlxTween;
+	private var dialogTextTween:FlxTween;
 
     override public function create():Void
     {
@@ -134,6 +130,28 @@ class SoraShop extends FlxState
         animationStateData = new AnimationStateData(skeletonData);
 
         shop = new SkeletonSprite(skeletonData, animationStateData);
+
+		if (SettingsData.instance.languagePlus == "Simplified_Chinese") {
+			talkDialogs = [
+				1 => "呀！请，请您别碰我的额头！",
+				2 => "我，我觉得……执行任务，应该要做好充分的准备！",
+				3 => "所以……还是建议您多买一点！大家都说，在我们店里买东西很划算！",
+				4 => "呃，老师，您一直这么盯着我看，我会不好意思的……！",
+				5 => "可以请您……给我看一下大人的卡片吗？",
+				6 => "可，可是……我觉得我们店的价格真的很良心了！",
+				7 => "一天24小时，您随时都可以来光顾！毕竟这里算是便利店嘛！"
+			];
+		} else {
+			talkDialogs = [
+				1 => "ひぁっ！お、おでこは 触らないでください！",
+				2 => "任務には…その、 じゅ、充分な準備が必要だと 思います！",
+				3 => "ですから…いっぱい買った方が いいですよ！うちのお店の物は買った方が 絶対にお得ですって！",
+				4 => "あ、あの、そんなにじっと 見つめられると 困ってしまうのですが…！",
+				5 => "大人のカード…見せていただいても よろしいでしょうか？",
+				6 => "で、ですが…うちのお店は！ すごく良心的なお値段ですから！",
+				7 => "24時間！いつでも訪問してください！ コンビニみたいなものですから！"
+			];
+		}
 
         // 随机选择登录效果
         selectedIntroType = FlxG.random.int(0, 1);
@@ -556,12 +574,38 @@ class SoraShop extends FlxState
 									trace("Setting idle animation");
 									// 注意: 这里可能需要检查shop是否存在
 									if (currentState.shop != null && currentState.shop.state != null) {
-										// currentState.shop.state.setAnimationByName(0, "Idle_01", true);
+										currentState.shop.state.setAnimationByName(0, "Idle_01", true);
 									}
 								}
 								currentState.isPlayingTalk = false;
 								currentState.talkCooldownTimer = 0.5; // 额外0.5秒冷却，确保动画切换完成
 								trace("Talk state reset - isPlayingTalk: false, talkCooldownTimer: 0.5");
+								
+								// 音频播放完毕后开始渐隐文本和背景框
+								if (currentState.dialogBackground.visible && currentState.dialogText.visible) {
+									trace("Starting dialog fade out after audio completion");
+									
+									// 取消之前的渐隐tween（如果有）
+									if (currentState.dialogBackgroundTween != null) {
+										currentState.dialogBackgroundTween.cancel();
+									}
+									if (currentState.dialogTextTween != null) {
+										currentState.dialogTextTween.cancel();
+									}
+									
+									// 创建新的渐隐tween
+									currentState.dialogBackgroundTween = FlxTween.tween(currentState.dialogBackground, {alpha: 0}, 1.0, {
+										onComplete: function(tween:FlxTween) {
+											currentState.dialogBackground.visible = false;
+										}
+									});
+									
+									currentState.dialogTextTween = FlxTween.tween(currentState.dialogText, {alpha: 0}, 1.0, {
+										onComplete: function(tween:FlxTween) {
+											currentState.dialogText.visible = false;
+										}
+									});
+								}
 							});
 						};
 					} else {
@@ -614,6 +658,32 @@ class SoraShop extends FlxState
 			isPlayingTalk = false;
 			talkCooldownTimer = 0.5;
 			trace("Talk state reset (fallback) - isPlayingTalk: false, talkCooldownTimer: 0.5");
+			
+			// 音频播放完毕后开始渐隐文本和背景框（fallback情况）
+			if (dialogBackground.visible && dialogText.visible) {
+				trace("Starting dialog fade out after audio completion (fallback)");
+				
+				// 取消之前的渐隐tween（如果有）
+				if (dialogBackgroundTween != null) {
+					dialogBackgroundTween.cancel();
+				}
+				if (dialogTextTween != null) {
+					dialogTextTween.cancel();
+				}
+				
+				// 创建新的渐隐tween
+				dialogBackgroundTween = FlxTween.tween(dialogBackground, {alpha: 0}, 1.0, {
+					onComplete: function(tween:FlxTween) {
+						dialogBackground.visible = false;
+					}
+				});
+				
+				dialogTextTween = FlxTween.tween(dialogText, {alpha: 0}, 1.0, {
+					onComplete: function(tween:FlxTween) {
+						dialogText.visible = false;
+					}
+				});
+			}
 		});
 	}
     
@@ -624,19 +694,18 @@ class SoraShop extends FlxState
         dialogBackground.alpha = 0.5;
         dialogText.alpha = 1;
         
+        // 取消之前的渐隐tween（如果有）
+        if (dialogBackgroundTween != null) {
+            dialogBackgroundTween.cancel();
+        }
+        if (dialogTextTween != null) {
+            dialogTextTween.cancel();
+        }
+        
         dialogText.resetText(text);
         dialogText.start(0.02, false, false, null, function() {
-            // 文本显示完成后3秒隐藏对话框
-            FlxTween.tween(dialogBackground, {alpha: 0}, 1.0, {
-                startDelay: 3.0,
-                onComplete: function(tween:FlxTween) {
-                    dialogBackground.visible = false;
-                    dialogText.visible = false;
-                }
-            });
-            FlxTween.tween(dialogText, {alpha: 0}, 1.0, {
-                startDelay: 3.0
-            });
+            // 文本显示完成后不再自动隐藏对话框，等待音频播放完毕
+            trace("Text display completed, waiting for audio to finish before fading out");
         });
     }
     
@@ -728,6 +797,16 @@ class SoraShop extends FlxState
             //FlxMouseEventManager.remove(hitbox);
             hitbox.destroy();
             hitbox = null;
+        }
+        
+        // 取消对话框渐隐tween
+        if (dialogBackgroundTween != null) {
+            dialogBackgroundTween.cancel();
+            dialogBackgroundTween = null;
+        }
+        if (dialogTextTween != null) {
+            dialogTextTween.cancel();
+            dialogTextTween = null;
         }
         
         // 重置状态变量
