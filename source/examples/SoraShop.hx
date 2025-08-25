@@ -72,8 +72,10 @@ class SoraShop extends FlxState
     private var skeletonData:SkeletonData;
     private var animationStateData:AnimationStateData;
     
-    // 戳戳碰撞箱
-    private var hitbox:FlxSprite;
+    // 碰撞箱
+    private var headTouchHitbox:FlxSprite;
+    private var eyeFollowHitbox:FlxSprite;
+    private var talkHitbox:FlxSprite; // 对话碰撞箱
     
     // Talk相关变量
     private var talkOrder:Array<Int> = [7, 2, 3, 4, 1, 5, 6];
@@ -97,7 +99,7 @@ class SoraShop extends FlxState
     private var dialogs2:Array<{text:String, time:Float, cumulative:Bool}> = [
         {text: "暇だなぁ…。", time: 0.3, cumulative: true},
         {text: "…え", time: 3.8, cumulative: true},
-        {text: "、うわあ！？", time: 4.35, cumulative: true},
+        {text: "、うわあ！?", time: 4.35, cumulative: true},
         {text: "い、いつから来てました？！", time: 5.4, cumulative: true}
     ];
     
@@ -114,6 +116,28 @@ class SoraShop extends FlxState
 	// 用于存储渐隐tween的变量
 	private var dialogBackgroundTween:FlxTween;
 	private var dialogTextTween:FlxTween;
+	
+	// 骨骼控制相关变量
+	private var touchPointBone:spine.Bone;
+	private var touchEyeBone:spine.Bone;
+	private var isTouchingHead:Bool = false;
+	private var isFollowingMouse:Bool = false;
+	private var touchPointOriginalPos:Array<Float> = [0, 0];
+	private var touchEyeOriginalPos:Array<Float> = [0, 0];
+	private var touchPointRadius:Float = 5;    // 头部触摸骨骼移动限制（改为5）
+	private var touchEyeRadius:Float = 6;      // 眼睛跟随骨骼移动限制
+	
+	// 平滑回归变量 - 改为使用单独变量而不是数组
+	private var touchPointTween:FlxTween;
+	private var touchEyeTween:FlxTween;
+	private var touchPointCurrentX:Float = 0;
+	private var touchPointCurrentY:Float = 0;
+	private var touchEyeCurrentX:Float = 0;
+	private var touchEyeCurrentY:Float = 0;
+	
+	// 回归标志
+	private var isReturningHead:Bool = false;
+	private var isReturningEye:Bool = false;
 
     override public function create():Void
     {
@@ -172,26 +196,29 @@ class SoraShop extends FlxState
         shop.screenCenter();
         add(shop);
         
-        // 创建戳戳碰撞箱
-        hitbox = new FlxSprite(0, 0).makeGraphic(95, 140, FlxColor.fromRGB(0, 191, 255, 100));
-        hitbox.screenCenter();
-		hitbox.x -= 67;
-		hitbox.y += 2;
+        // 初始化骨骼控制
+        setupBoneControl();
 
-        hitbox.visible = false; // 设置为半透明可见，便于测试
-        add(hitbox);
+        // 创建头部触摸碰撞箱
+        headTouchHitbox = new FlxSprite(0, 0).makeGraphic(100, 100, FlxColor.fromRGB(255, 0, 0, 100));
+        headTouchHitbox.screenCenter();
+        headTouchHitbox.x -= 50;
+        headTouchHitbox.y -= 100;
+        headTouchHitbox.visible = true; // 设置为半透明可见，便于测试
+        add(headTouchHitbox);
         
-        /* 添加鼠标点击事件
-        FlxMouseEventManager.add(
-            hitbox, 
-            function onMouseDown(sprite:FlxSprite) {
-                if (talkFinished && !isPlayingTalk && hasSwitchedAnimation) {
-                    playNextTalk();
-                }
-            },
-            null, null, null, false, true, false
-        );
-		*/
+        // 创建眼睛跟随碰撞箱（全屏）
+        eyeFollowHitbox = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, FlxColor.fromRGB(0, 255, 0, 50));
+        eyeFollowHitbox.visible = true; // 设置为半透明可见，便于测试
+        add(eyeFollowHitbox);
+        
+        // 创建对话碰撞箱
+        talkHitbox = new FlxSprite(0, 0).makeGraphic(95, 140, FlxColor.fromRGB(0, 191, 255, 100));
+        talkHitbox.screenCenter();
+        talkHitbox.x -= 67;
+        talkHitbox.y += 2;
+        talkHitbox.visible = true; // 设置为半透明可见，便于测试
+        add(talkHitbox);
 
         // 初始化摄像机位置
         cameraTargetPos = FlxPoint.get(FlxG.camera.scroll.x, FlxG.camera.scroll.y);
@@ -332,6 +359,155 @@ class SoraShop extends FlxState
         super.create();
     }
 
+	// 设置骨骼控制
+	private function setupBoneControl():Void {
+		// 查找触摸点和眼睛骨骼
+		touchPointBone = shop.skeleton.findBone("Touch_Point");
+		touchEyeBone = shop.skeleton.findBone("Touch_Eye");
+		
+		if (touchPointBone != null) {
+			touchPointOriginalPos = [touchPointBone.x, touchPointBone.y];
+			touchPointCurrentX = touchPointBone.x;
+			touchPointCurrentY = touchPointBone.y;
+		}
+		
+		if (touchEyeBone != null) {
+			touchEyeOriginalPos = [touchEyeBone.x, touchEyeBone.y];
+			touchEyeCurrentX = touchEyeBone.x;
+			touchEyeCurrentY = touchEyeBone.y;
+		}
+		
+		// 设置骨骼更新前的回调
+		shop.beforeUpdateWorldTransforms = function(skeletonSprite:SkeletonSprite) {
+			// 处理头部触摸
+			if (isTouchingHead && touchPointBone != null) {
+				var mouseWorldPos = FlxG.mouse.getWorldPosition();
+				var point = [mouseWorldPos.x, mouseWorldPos.y];
+				skeletonSprite.haxeWorldCoordinatesToBone(point, touchPointBone);
+				
+				// 计算基于距离差的偏移
+				var dx = (point[0] - touchPointOriginalPos[0]) * 0.5; // 降低x轴变换
+				var dy = (point[1] - touchPointOriginalPos[1]) * 0.15; // 降低y轴变换
+				
+				// 限制移动范围
+				var distance = Math.sqrt(dx * dx + dy * dy);
+				if (distance > touchPointRadius) {
+					var angle = Math.atan2(dy, dx);
+					dx = Math.cos(angle) * touchPointRadius;
+					dy = Math.sin(angle) * touchPointRadius;
+				}
+				
+				// 更新当前位置
+				touchPointCurrentX = touchPointOriginalPos[0] + dx;
+				touchPointCurrentY = touchPointOriginalPos[1] + dy;
+				
+				touchPointBone.x = touchPointCurrentX;
+				touchPointBone.y = touchPointCurrentY;
+			}
+			
+			// 处理眼睛跟随
+			if (isFollowingMouse && touchEyeBone != null) {
+				var mouseWorldPos = FlxG.mouse.getWorldPosition();
+				var point = [mouseWorldPos.x, mouseWorldPos.y];
+				skeletonSprite.haxeWorldCoordinatesToBone(point, touchEyeBone);
+				
+				// 计算基于距离差的偏移
+				var dx = (point[0] - touchEyeOriginalPos[0]) * 0.3; // 降低x轴变换
+				var dy = (point[1] - touchEyeOriginalPos[1]) * 0.08; // 降低y轴变换
+				
+				// 限制移动范围
+				var distance = Math.sqrt(dx * dx + dy * dy);
+				if (distance > touchEyeRadius) {
+					var angle = Math.atan2(dy, dx);
+					dx = Math.cos(angle) * touchEyeRadius;
+					dy = Math.sin(angle) * touchEyeRadius;
+				}
+				
+				// 更新当前位置
+				touchEyeCurrentX = touchEyeOriginalPos[0] + dx;
+				touchEyeCurrentY = touchEyeOriginalPos[1] + dy;
+				
+				touchEyeBone.x = touchEyeCurrentX;
+				touchEyeBone.y = touchEyeCurrentY;
+			}
+		};
+	}
+
+	// 平滑回归到默认位置 - 修复版本
+	private function smoothReturnToDefault(isHead:Bool):Void {
+		if (isHead && touchPointBone != null) {
+			// 取消之前的补间
+			if (touchPointTween != null) {
+				touchPointTween.cancel();
+			}
+			
+			// 设置回归标志
+			isReturningHead = true;
+			
+			// 创建新的补间，0.5秒内回到默认位置
+			touchPointTween = FlxTween.tween(
+				this, 
+				{ 
+					touchPointCurrentX: touchPointOriginalPos[0],
+					touchPointCurrentY: touchPointOriginalPos[1]
+				}, 
+				0.5, 
+				{
+					ease: FlxEase.quadOut,
+					onUpdate: function(tween:FlxTween) {
+						if (isTransitioning) {
+							tween.cancel();
+							return;
+						}
+						touchPointBone.x = touchPointCurrentX;
+						touchPointBone.y = touchPointCurrentY;
+					},
+					onComplete: function(tween:FlxTween) {
+						if (isTransitioning) return;
+						isReturningHead = false;
+						// 回归完成后播放Idle动画
+						shop.state.setAnimationByName(0, "Idle_01", true);
+					}
+				}
+			);
+		} else if (!isHead && touchEyeBone != null) {
+			// 取消之前的补间
+			if (touchEyeTween != null) {
+				touchEyeTween.cancel();
+			}
+			
+			// 设置回归标志
+			isReturningEye = true;
+			
+			// 创建新的补间，0.5秒内回到默认位置
+			touchEyeTween = FlxTween.tween(
+				this, 
+				{ 
+					touchEyeCurrentX: touchEyeOriginalPos[0],
+					touchEyeCurrentY: touchEyeOriginalPos[1]
+				}, 
+				0.5, 
+				{
+					ease: FlxEase.quadOut,
+					onUpdate: function(tween:FlxTween) {
+						if (isTransitioning) {
+							tween.cancel();
+							return;
+						}
+						touchEyeBone.x = touchEyeCurrentX;
+						touchEyeBone.y = touchEyeCurrentY;
+					},
+					onComplete: function(tween:FlxTween) {
+						if (isTransitioning) return;
+						isReturningEye = false;
+						// 回归完成后播放Idle动画
+						shop.state.setAnimationByName(0, "Idle_01", true);
+					}
+				}
+			);
+		}
+	}
+
 	override public function update(elapsed:Float):Void {
 		super.update(elapsed);
 
@@ -350,13 +526,75 @@ class SoraShop extends FlxState
 		var mousePressed = FlxG.mouse.pressed;
 		var mouseWorldPos = FlxG.mouse.getWorldPosition();
 
-		// 检查鼠标是否在hitbox上
-		var mouseOverHitbox = hitbox.overlapsPoint(mouseWorldPos);
+		// 检查鼠标是否在头部触摸碰撞箱上
+		var mouseOverHead = headTouchHitbox.overlapsPoint(mouseWorldPos);
+		
+		// 检查鼠标是否在眼睛跟随碰撞箱上（全屏）
+		var mouseOverEye = eyeFollowHitbox.overlapsPoint(mouseWorldPos);
+		
+		// 检查鼠标是否在对话碰撞箱上
+		var mouseOverTalk = talkHitbox.overlapsPoint(mouseWorldPos);
 
 		// 检测鼠标点击事件
-		if (mousePressed && !wasMousePressed && mouseOverHitbox) {
-			if (talkFinished && !isPlayingTalk && hasSwitchedAnimation) {
+		if (mousePressed && !wasMousePressed) {
+			if (mouseOverHead && !isTouchingHead && !isFollowingMouse && !isReturningHead && !isReturningEye) {
+				// 开始头部触摸
+				isTouchingHead = true;
+				trace("开始头部触摸");
+				
+				// 取消任何正在进行的回归动画
+				if (touchPointTween != null) {
+					touchPointTween.cancel();
+					touchPointTween = null;
+				}
+				isReturningHead = false;
+				
+				// 播放头部触摸动画
+				shop.state.setAnimationByName(1, "Pat_01_M", true);
+			} else if (mouseOverEye && !isFollowingMouse && !isTouchingHead && !isReturningHead && !isReturningEye) {
+				// 开始眼睛跟随
+				isFollowingMouse = true;
+				trace("开始眼睛跟随");
+				
+				// 取消任何正在进行的回归动画
+				if (touchEyeTween != null) {
+					touchEyeTween.cancel();
+					touchEyeTween = null;
+				}
+				isReturningEye = false;
+				
+				// 播放眼睛跟随动画
+				shop.state.setAnimationByName(1, "Look_01_M", true);
+			} else if (mouseOverTalk && talkFinished && !isPlayingTalk && hasSwitchedAnimation) {
+				// 开始对话
 				playNextTalk();
+			}
+		}
+
+		// 检测鼠标释放事件
+		if (!mousePressed && wasMousePressed) {
+			if (isTouchingHead) {
+				// 结束头部触摸
+				isTouchingHead = false;
+				trace("结束头部触摸");
+				
+				// 播放头部触摸结束动画
+				shop.state.setAnimationByName(1, "PatEnd_01_A", false);
+				
+				// 平滑回归到默认位置
+				smoothReturnToDefault(true);
+			}
+			
+			if (isFollowingMouse) {
+				// 结束眼睛跟随
+				isFollowingMouse = false;
+				trace("结束眼睛跟随");
+				
+				// 播放眼睛跟随结束动画
+				shop.state.setAnimationByName(1, "LookEnd_01_A", false);
+				
+				// 平滑回归到默认位置
+				smoothReturnToDefault(false);
 			}
 		}
 
@@ -761,6 +999,16 @@ class SoraShop extends FlxState
             itemBGTween = null;
         }
         
+        if (touchPointTween != null) {
+            touchPointTween.cancel();
+            touchPointTween = null;
+        }
+        
+        if (touchEyeTween != null) {
+            touchEyeTween.cancel();
+            touchEyeTween = null;
+        }
+        
         // 停止并销毁音乐
         if (bgMusic != null) {
             bgMusic.stop();
@@ -791,11 +1039,18 @@ class SoraShop extends FlxState
             uiCamera = null;
         }
         
-        // 移除鼠标事件管理器
-        if (hitbox != null) {
-            //FlxMouseEventManager.remove(hitbox);
-            hitbox.destroy();
-            hitbox = null;
+        // 移除碰撞箱
+        if (headTouchHitbox != null) {
+            headTouchHitbox.destroy();
+            headTouchHitbox = null;
+        }
+        if (eyeFollowHitbox != null) {
+            eyeFollowHitbox.destroy();
+            eyeFollowHitbox = null;
+        }
+        if (talkHitbox != null) {
+            talkHitbox.destroy();
+            talkHitbox = null;
         }
         
         // 取消对话框渐隐tween
@@ -821,6 +1076,10 @@ class SoraShop extends FlxState
         talkFinished = true;
         hasCompletedFirstRound = false;
         usedRandomIndices = [];
+        isTouchingHead = false;
+        isFollowingMouse = false;
+        isReturningHead = false;
+        isReturningEye = false;
         
         super.destroy();
     }
