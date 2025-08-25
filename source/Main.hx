@@ -17,16 +17,13 @@ class Main extends Sprite {
         // Initialize settings before creating the game
         SettingsData.init();
         
-        flixelGame = new FlxGame(1920, 1080, LogoState, 120);
+        flixelGame = new FlxGame(1920, 1080, LogoState, 60);
         FlxG.autoPause = false;
         
         // Apply settings
         SettingsData.instance.apply();
         
         addChild(flixelGame);
-        FlxG.drawFramerate = 120;
-
-        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
 
         // Create FPS counter if enabled
         if (SettingsData.instance.showFPS) {

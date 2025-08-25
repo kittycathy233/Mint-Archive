@@ -119,7 +119,6 @@ class SoraShop extends FlxState
     {
         FlxG.cameras.bgColor = 0xff000000;
         FlxG.autoPause = SettingsData.instance.autoPause;
-        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
 
         var atlasFile = Assets.getText("assets/spr/BlueArchive/sora_shop.atlas");
         var skeletonFile = Assets.getBytes("assets/spr/BlueArchive/sora_shop.skel");

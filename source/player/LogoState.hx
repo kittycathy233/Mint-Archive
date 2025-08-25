@@ -19,10 +19,12 @@ class LogoState extends FlxState
     
     override public function create():Void
     {
-        //FlxG.drawFramerate = FlxG.updateFramerate = 120;
-        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
+        FlxG.drawFramerate = 60;
 
+        SettingsData.init();
+        SettingsData.instance.load();
         super.create();
+		
 		#if NO_LOGO
         hasFinished = true;
 		finishLogo();
@@ -58,6 +60,7 @@ class LogoState extends FlxState
 			}
 		});
 		#end
+		
     }
     
     private function onSoundComplete():Void

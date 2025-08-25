@@ -25,8 +25,6 @@ class FlixelState extends FlxState
 	override public function create():Void
 	{
 		FlxG.cameras.bgColor = 0xff000000;
-		//FlxG.drawFramerate = FlxG.updateFramerate = 120;
-		FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
         FlxG.autoPause = SettingsData.instance.autoPause;
 
 		var atlasFile = Assets.getText("assets/spr/BlueArchive/CH0288_spr.atlas");

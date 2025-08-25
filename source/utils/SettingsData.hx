@@ -123,7 +123,7 @@ class SettingsData
         final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
         FlxG.stage.frameRate = vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : frameRateLimit;
 
-        trace("Settings loaded:     TitleTheme: " + titleTheme + "   Language: " + languagePlus);
+        trace("Settings loaded:     TitleTheme: " + titleTheme + "   Language: " + languagePlus + "     FPS:" + frameRateLimit);
     }
     
     private function replaceSpecialChars(str:String):String

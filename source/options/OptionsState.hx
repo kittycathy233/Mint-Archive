@@ -70,7 +70,9 @@ class OptionsState extends FlxState
         SettingsData.init();
 
         FlxG.autoPause = SettingsData.instance.autoPause;
-        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
+
+        final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
+        FlxG.updateFramerate = SettingsData.instance.vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : SettingsData.instance.frameRateLimit;
 
         // 初始化Conductor，设置BPM为114
         Conductor.init(114);
@@ -433,7 +435,9 @@ class OptionsState extends FlxState
             confirmText.destroy();
         }});
 
-        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
+        SettingsData.instance.load();
+        final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
+        FlxG.updateFramerate = SettingsData.instance.vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : SettingsData.instance.frameRateLimit;
 
     }
     

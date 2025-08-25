@@ -21,7 +21,6 @@ import flixel.math.FlxRect;
 import openfl.geom.Rectangle;
 import openfl.display.Shape;
 import openfl.geom.Point;
-import utils.SettingsData;
 import options.OptionsState;
 
 import examples.flixel.FlixelState;
@@ -63,10 +62,7 @@ private var mouseTrail:debug.MouseTrail;
 
     override public function create():Void 
     {
-        SettingsData.init();
-        SettingsData.instance.load();
         FlxG.autoPause = SettingsData.instance.autoPause;
-        FlxG.updateFramerate = SettingsData.instance.frameRateLimit;
 
         super.create();
 

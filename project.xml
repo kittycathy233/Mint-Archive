@@ -15,7 +15,7 @@
 	<set name="SWF_VERSION" value="11.8" />
 
 	<!-- Window -->
-	<window width="1280" height="720" background="#000000" fps="120" />
+	<window width="1280" height="720" background="#000000" fps="60" />
 	<window hardware="true" allow-shaders="true" require-shaders="true" depth-buffer="true" stencil-buffer="true" />
 	<window fullscreen="false" borderless="false" vsync="false" allow-high-dpi="true"/>
 	<window orientation="portrait" />
