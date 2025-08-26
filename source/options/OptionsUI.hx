@@ -60,7 +60,7 @@ class OptionsUI
         yPos += 240; // 3 volume controls * 80
         
         createDisplayControls(yPos, labelWidth, controlX);
-        yPos += 120; // 3 display controls * 40
+        yPos += 160; // 4 display controls * 40
         
         createLanguageControls(yPos, labelWidth, controlX);
         yPos += 80; // 2 language/theme controls * 40
@@ -398,17 +398,28 @@ class OptionsUI
             var jsonString = File.getContent(filePath);
             
             // 使用SettingsData的导入方法
-            if (SettingsData.instance.importFromJson(jsonString))
+            var result = SettingsData.instance.importFromJson(jsonString);
+            
+            if (result.success)
             {
-                // 更新UI
-                parent.updateUIFromSettings();
-                
-                // 应用设置
-                SettingsData.instance.apply();
-                SettingsData.instance.save();
-                
-                // 显示成功消息
-                showMessage("Settings imported successfully", FlxColor.GREEN);
+                if (result.changes != null && result.changes.length > 0)
+                {
+                    // 有设置变更，显示确认对话框
+                    showSettingsChangeConfirmation(result.changes, result.newSettings);
+                }
+                else
+                {
+                    // 没有变更或变更已被直接应用
+                    // 更新UI
+                    parent.updateUIFromSettings();
+                    
+                    // 应用设置
+                    SettingsData.instance.apply();
+                    SettingsData.instance.save();
+                    
+                    // 显示成功消息
+                    showMessage("Settings imported successfully", FlxColor.GREEN);
+                }
             }
             else
             {
@@ -420,6 +431,137 @@ class OptionsUI
             // 显示错误消息
             showMessage("Import failed: " + e, FlxColor.RED);
         }
+    }
+    
+    /**
+     * 显示设置变更确认对话框
+     * @param changes 变更列表
+     * @param newSettings 新设置对象
+     */
+    private function showSettingsChangeConfirmation(changes:Array<{setting:String, oldValue:Dynamic, newValue:Dynamic}>, newSettings:utils.SettingsData):Void
+    {
+        // 创建对话框背景
+        var dialogWidth = 600;
+        var dialogHeight = Std.int(Math.min(400, 100 + changes.length * 20));
+        var dialogX = (FlxG.width - dialogWidth) / 2;
+        var dialogY = (FlxG.height - dialogHeight) / 2;
+        
+        var dialogBg = new FlxSprite(dialogX, dialogY);
+        dialogBg.makeGraphic(dialogWidth, dialogHeight, FlxColor.fromRGB(240, 240, 240));
+        parent.add(dialogBg);
+        
+        // 添加标题
+        var titleBar = new FlxSprite(dialogX, dialogY);
+        titleBar.makeGraphic(dialogWidth, 30, FlxColor.fromRGB(0, 120, 215));
+        parent.add(titleBar);
+        
+        var titleText = new FlxText(dialogX + 10, dialogY + 5, dialogWidth - 20, "Confirm Settings Changes", 16);
+        titleText.color = FlxColor.WHITE;
+        parent.add(titleText);
+        
+        // 添加说明文本
+        var descText = new FlxText(dialogX + 10, dialogY + 40, dialogWidth - 20, 
+            "The following settings will be changed:", 14);
+        descText.color = FlxColor.BLACK;
+        parent.add(descText);
+        
+        // 添加变更列表
+        var yPos = dialogY + 70;
+        var changeTexts:Array<FlxText> = [];
+        
+        for (change in changes)
+        {
+            var oldValueStr = Std.string(change.oldValue);
+            var newValueStr = Std.string(change.newValue);
+            
+            // 格式化布尔值显示
+            if (Std.isOfType(change.oldValue, Bool)) {
+                oldValueStr = change.oldValue ? "Enabled" : "Disabled";
+            }
+            if (Std.isOfType(change.newValue, Bool)) {
+                newValueStr = change.newValue ? "Enabled" : "Disabled";
+            }
+            
+            // 格式化数值显示
+            if (Std.isOfType(change.oldValue, Float) && !Std.string(change.oldValue).contains("x")) {
+                oldValueStr = Math.round(change.oldValue * 100) / 100 + "";
+            }
+            if (Std.isOfType(change.newValue, Float) && !Std.string(change.newValue).contains("x")) {
+                newValueStr = Math.round(change.newValue * 100) / 100 + "";
+            }
+            
+            var changeText = new FlxText(dialogX + 20, yPos, dialogWidth - 40, 
+                '${change.setting}: ${oldValueStr} → ${newValueStr}', 12);
+            changeText.color = FlxColor.BLACK;
+            parent.add(changeText);
+            changeTexts.push(changeText);
+            
+            yPos += 20;
+        }
+        
+        // 创建按钮
+        var confirmButton = new FlxButton(dialogX + dialogWidth - 220, dialogY + dialogHeight - 50, 
+            "Apply Changes", null);
+        confirmButton.scale.set(1.5, 1.5);
+        parent.add(confirmButton);
+        
+        var cancelButton = new FlxButton(dialogX + dialogWidth - 120, dialogY + dialogHeight - 50, 
+            "Cancel", null);
+        cancelButton.scale.set(1.5, 1.5);
+        parent.add(cancelButton);
+        
+        // 设置按钮回调（在按钮创建后）
+        confirmButton.onUp.callback = function() {
+            // 应用新设置
+            SettingsData.instance.applyNewSettings(newSettings);
+            
+            // 更新UI
+            parent.updateUIFromSettings();
+            
+            // 应用设置
+            SettingsData.instance.apply();
+            SettingsData.instance.save();
+            
+            // 关闭对话框
+            removeDialog(dialogBg, titleBar, titleText, descText, changeTexts, confirmButton, cancelButton);
+            
+            // 显示成功消息
+            showMessage("Settings imported successfully", FlxColor.GREEN);
+        };
+        
+        cancelButton.onUp.callback = function() {
+            // 关闭对话框
+            removeDialog(dialogBg, titleBar, titleText, descText, changeTexts, confirmButton, cancelButton);
+        };
+    }
+    
+    /**
+     * 移除对话框元素
+     */
+    private function removeDialog(dialogBg:FlxSprite, titleBar:FlxSprite, titleText:FlxText, descText:FlxText, 
+                                 changeTexts:Array<FlxText>, confirmButton:FlxButton, cancelButton:FlxButton):Void
+    {
+        // 移除所有对话框元素
+        parent.remove(dialogBg);
+        parent.remove(titleBar);
+        parent.remove(titleText);
+        parent.remove(descText);
+        
+        for (text in changeTexts) {
+            parent.remove(text);
+            text.destroy();
+        }
+        
+        parent.remove(confirmButton);
+        parent.remove(cancelButton);
+        
+        // 销毁对象
+        dialogBg.destroy();
+        titleBar.destroy();
+        titleText.destroy();
+        descText.destroy();
+        confirmButton.destroy();
+        cancelButton.destroy();
     }
     
     /**

@@ -174,9 +174,9 @@ class SettingsData
     /**
      * 从JSON字符串导入设置
      * @param jsonString 包含设置的JSON字符串
-     * @return Bool 导入是否成功
+     * @return Dynamic 包含导入结果和变更信息的对象
      */
-    public function importFromJson(jsonString:String):Bool
+    public function importFromJson(jsonString:String):Dynamic
     {
         try
         {
@@ -187,35 +187,127 @@ class SettingsData
                 settingsObj.musicVolume == null || 
                 settingsObj.sfxVolume == null)
             {
-                return false;
+                return { success: false, changes: null };
             }
             
-            // 应用设置
-            if (settingsObj.masterVolume != null) masterVolume = settingsObj.masterVolume;
-            if (settingsObj.musicVolume != null) musicVolume = settingsObj.musicVolume;
-            if (settingsObj.sfxVolume != null) sfxVolume = settingsObj.sfxVolume;
-            if (settingsObj.fullscreen != null) fullscreen = settingsObj.fullscreen;
+            // 创建一个临时设置对象来存储新设置
+            var newSettings = new SettingsData();
+            
+            // 应用设置到临时对象
+            if (settingsObj.masterVolume != null) newSettings.masterVolume = settingsObj.masterVolume;
+            if (settingsObj.musicVolume != null) newSettings.musicVolume = settingsObj.musicVolume;
+            if (settingsObj.sfxVolume != null) newSettings.sfxVolume = settingsObj.sfxVolume;
+            if (settingsObj.fullscreen != null) newSettings.fullscreen = settingsObj.fullscreen;
             
             if (settingsObj.resolution != null)
             {
-                resolution.x = settingsObj.resolution.x;
-                resolution.y = settingsObj.resolution.y;
+                newSettings.resolution.x = settingsObj.resolution.x;
+                newSettings.resolution.y = settingsObj.resolution.y;
             }
             
-            if (settingsObj.showFPS != null) showFPS = settingsObj.showFPS;
-            if (settingsObj.languagePlus != null) languagePlus = settingsObj.languagePlus;
-            if (settingsObj.vsync != null) vsync = settingsObj.vsync;
-            if (settingsObj.autoPause != null) autoPause = settingsObj.autoPause;
-            if (settingsObj.titleTheme != null) titleTheme = settingsObj.titleTheme;
-            if (settingsObj.antialiasing != null) antialiasing = settingsObj.antialiasing;
-            if (settingsObj.frameRateLimit != null) frameRateLimit = settingsObj.frameRateLimit;
+            if (settingsObj.showFPS != null) newSettings.showFPS = settingsObj.showFPS;
+            if (settingsObj.languagePlus != null) newSettings.languagePlus = settingsObj.languagePlus;
+            if (settingsObj.vsync != null) newSettings.vsync = settingsObj.vsync;
+            if (settingsObj.autoPause != null) newSettings.autoPause = settingsObj.autoPause;
+            if (settingsObj.titleTheme != null) newSettings.titleTheme = settingsObj.titleTheme;
+            if (settingsObj.antialiasing != null) newSettings.antialiasing = settingsObj.antialiasing;
+            if (settingsObj.frameRateLimit != null) newSettings.frameRateLimit = settingsObj.frameRateLimit;
             
-            return true;
+            // 比较新旧设置，找出变更
+            var changes = compareSettings(this, newSettings);
+            
+            // 如果有变更，返回变更信息
+            if (changes.length > 0)
+            {
+                return { success: true, changes: changes, newSettings: newSettings };
+            }
+            else
+            {
+                // 没有变更，直接应用设置
+                applyNewSettings(newSettings);
+                return { success: true, changes: null };
+            }
         }
         catch (e:Dynamic)
         {
             trace("Error importing settings: " + e);
-            return false;
+            return { success: false, changes: null };
         }
+    }
+    
+    /**
+     * 比较两个设置对象，返回变更列表
+     * @param oldSettings 旧设置
+     * @param newSettings 新设置
+     * @return Array<{setting:String, oldValue:Dynamic, newValue:Dynamic}> 变更列表
+     */
+    private function compareSettings(oldSettings:SettingsData, newSettings:SettingsData):Array<{setting:String, oldValue:Dynamic, newValue:Dynamic}>
+    {
+        var changes:Array<{setting:String, oldValue:Dynamic, newValue:Dynamic}> = [];
+        
+        // 比较各个设置项
+        if (oldSettings.masterVolume != newSettings.masterVolume)
+            changes.push({setting: "Master Volume", oldValue: oldSettings.masterVolume, newValue: newSettings.masterVolume});
+            
+        if (oldSettings.musicVolume != newSettings.musicVolume)
+            changes.push({setting: "Music Volume", oldValue: oldSettings.musicVolume, newValue: newSettings.musicVolume});
+            
+        if (oldSettings.sfxVolume != newSettings.sfxVolume)
+            changes.push({setting: "SFX Volume", oldValue: oldSettings.sfxVolume, newValue: newSettings.sfxVolume});
+            
+        if (oldSettings.fullscreen != newSettings.fullscreen)
+            changes.push({setting: "Fullscreen", oldValue: oldSettings.fullscreen, newValue: newSettings.fullscreen});
+            
+        if (oldSettings.resolution.x != newSettings.resolution.x || oldSettings.resolution.y != newSettings.resolution.y)
+            changes.push({
+                setting: "Resolution", 
+                oldValue: oldSettings.resolution.x + "x" + oldSettings.resolution.y, 
+                newValue: newSettings.resolution.x + "x" + newSettings.resolution.y
+            });
+            
+        if (oldSettings.showFPS != newSettings.showFPS)
+            changes.push({setting: "Show FPS", oldValue: oldSettings.showFPS, newValue: newSettings.showFPS});
+            
+        if (oldSettings.languagePlus != newSettings.languagePlus)
+            changes.push({setting: "Language", oldValue: oldSettings.languagePlus, newValue: newSettings.languagePlus});
+            
+        if (oldSettings.vsync != newSettings.vsync)
+            changes.push({setting: "VSync", oldValue: oldSettings.vsync, newValue: newSettings.vsync});
+            
+        if (oldSettings.autoPause != newSettings.autoPause)
+            changes.push({setting: "Auto Pause", oldValue: oldSettings.autoPause, newValue: newSettings.autoPause});
+            
+        if (oldSettings.titleTheme != newSettings.titleTheme)
+            changes.push({setting: "Title Theme", oldValue: oldSettings.titleTheme, newValue: newSettings.titleTheme});
+            
+        if (oldSettings.antialiasing != newSettings.antialiasing)
+            changes.push({setting: "Antialiasing", oldValue: oldSettings.antialiasing, newValue: newSettings.antialiasing});
+            
+        if (oldSettings.frameRateLimit != newSettings.frameRateLimit)
+            changes.push({setting: "Frame Rate Limit", oldValue: oldSettings.frameRateLimit, newValue: newSettings.frameRateLimit});
+            
+        return changes;
+    }
+    
+    /**
+     * 应用新设置
+     * @param newSettings 新设置对象
+     */
+    public function applyNewSettings(newSettings:SettingsData):Void
+    {
+        // 复制所有设置
+        this.masterVolume = newSettings.masterVolume;
+        this.musicVolume = newSettings.musicVolume;
+        this.sfxVolume = newSettings.sfxVolume;
+        this.fullscreen = newSettings.fullscreen;
+        this.resolution.x = newSettings.resolution.x;
+        this.resolution.y = newSettings.resolution.y;
+        this.showFPS = newSettings.showFPS;
+        this.languagePlus = newSettings.languagePlus;
+        this.vsync = newSettings.vsync;
+        this.autoPause = newSettings.autoPause;
+        this.titleTheme = newSettings.titleTheme;
+        this.antialiasing = newSettings.antialiasing;
+        this.frameRateLimit = newSettings.frameRateLimit;
     }
 }
