@@ -5,62 +5,29 @@ import flixel.FlxState;
 import flixel.ui.FlxButton;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
-import flixel.group.FlxGroup.FlxTypedGroup;
-import flixel.addons.ui.FlxUICheckBox;
-import flixel.addons.ui.FlxUISlider;
-import flixel.addons.ui.FlxUIDropDownMenu;
-import flixel.addons.ui.FlxUINumericStepper;
 import flixel.tweens.FlxTween;
-import flixel.tweens.FlxEase;
-import flixel.FlxSprite;
 import flixel.math.FlxMath;
 import utils.Conductor;
 import utils.SettingsData;
-import openfl.Assets;
+import options.OptionsUI;
+import options.OptionsBackground;
+import options.OptionsTitle;
 
 class OptionsState extends FlxState
 {
     private var backButton:FlxButton;
-    private var titleText:FlxText;
-    private var titleTrailGroup:FlxTypedGroup<FlxText>;
-    
-    // UI Elements
-    private var masterVolumeSlider:FlxUISlider;
-    private var musicVolumeSlider:FlxUISlider;
-    private var sfxVolumeSlider:FlxUISlider;
-    private var fullscreenCheckbox:FlxUICheckBox;
-    private var vsyncCheckbox:FlxUICheckBox;
-    private var showFPSCheckbox:FlxUICheckBox;
-    private var autoPauseCheckbox:FlxUICheckBox;
-    private var languagePlusDropdown:FlxUIDropDownMenu;
-    private var resolutionDropdown:FlxUIDropDownMenu;
-    private var titleThemeDropdown:FlxUIDropDownMenu;
-    private var frameRateStepper:FlxUINumericStepper;
-    private var frameRateLabel:FlxText;
     private var applyButton:FlxButton;
     private var resetButton:FlxButton;
     
-    // 位置变量
-    private var vsyncX:Float;
-    private var frameRateOriginalX:Float;
-    
-    // 背景元素
-    private var bg:FlxSprite;
-    private var bgMusic:flixel.sound.FlxSound;
-    private var bgSfx:flixel.sound.FlxSound;
+    // 模块化组件
+    private var optionsUI:OptionsUI;
+    private var optionsBackground:OptionsBackground;
+    private var optionsTitle:OptionsTitle;
     
     // 添加这些字段用于滑块绑定
     public var masterVolumeValue:Float = SettingsData.instance.masterVolume;
     public var musicVolumeValue:Float = SettingsData.instance.musicVolume;
     public var sfxVolumeValue:Float = SettingsData.instance.sfxVolume;
-
-    // 动画变量
-    private var titleY:Float = 50;
-    private var titleAmplitude:Float = 4;
-    private var titleSpeed:Float = 4;
-    private var titleTime:Float = 0;
-    private var defaultBgScale:Float = 1.7;
-    private var targetBgScale:Float = 1.7;
     
     override public function create():Void
     {
@@ -77,40 +44,41 @@ class OptionsState extends FlxState
         // 初始化Conductor，设置BPM为114
         Conductor.init(114);
         
-        // 加载背景图
-        bg = new FlxSprite(0, 0).loadGraphic("assets/images/bg/BG_Garret_Night.jpg");
-        bg.scale.set(1.8, 1.8);
-        bg.updateHitbox();
-        bg.screenCenter();
-        bg.scrollFactor.set(0.2, 0.2);
-        add(bg);
+        // 创建模块化组件
+        optionsBackground = new OptionsBackground(this);
+        optionsBackground.create();
         
-        // 播放背景音乐
-        bgMusic = FlxG.sound.play("assets/music/Theme_281.ogg", SettingsData.instance.masterVolume * SettingsData.instance.musicVolume * 0.8, true);
-        bgMusic.persist = true;
+        optionsTitle = new OptionsTitle(this);
+        optionsTitle.create();
         
+        optionsUI = new OptionsUI(this);
+        
+        // 初始化音量值
         masterVolumeValue = SettingsData.instance.masterVolume;
         musicVolumeValue = SettingsData.instance.musicVolume;
         sfxVolumeValue = SettingsData.instance.sfxVolume;
         
-        updateMusicVolume();
-
-        titleText = new FlxText(0, titleY, FlxG.width, "SETTINGS", 32);
-        titleText.setFormat(Assets.getFont("assets/fonts/arturito-slab.ttf").fontName, 60, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-        titleText.borderSize = 4;
-        add(titleText);
-
-        titleTrailGroup = new FlxTypedGroup<FlxText>();
-        add(titleTrailGroup);
+        // 创建UI
+        optionsUI.createUI();
         
+        // 创建按钮
+        createButtons();
+        
+        // 设置Conductor的节拍回调
+        Conductor.onBeat = onBeat;
+        
+        // 初始更新帧率设置UI状态
+        optionsUI.drawFramerateUI();
+    }
+    
+    private function createButtons():Void
+    {
         backButton = new FlxButton(100, FlxG.height - 120, "Back", goBack);
         backButton.updateHitbox();
         backButton.label.scale.set(2, 2);
         backButton.scale.set(2, 2);
         add(backButton);
         
-        createSettingsUI();
-
         applyButton = new FlxButton(FlxG.width - 300, FlxG.height - 120, "Apply", applySettings);
         applyButton.updateHitbox();
         applyButton.scale.set(2, 2);
@@ -122,230 +90,18 @@ class OptionsState extends FlxState
         resetButton.scale.set(2, 2);
         resetButton.label.scale.set(2, 2);
         add(resetButton);
-        
-        // 设置Conductor的节拍回调
-        Conductor.onBeat = onBeat;
-        
-        // 初始更新帧率设置UI状态
-        drawFramerateUI();
     }
     
-    private function updateMusicVolume():Void
+    public function updateMusicVolume():Void
     {
-        if (bgMusic != null)
-        {
-            bgMusic.volume = SettingsData.instance.masterVolume * SettingsData.instance.musicVolume * 0.8;
-        }
-        if (bgSfx != null)
-        {
-            bgSfx.volume = SettingsData.instance.masterVolume * SettingsData.instance.sfxVolume * 0.6;
-        }
+        optionsBackground.updateMusicVolume();
     }
     
     private function onBeat():Void
     {
-        // 在节拍时立即放大背景
-        bg.scale.x += 0.01;
-        bg.scale.y += 0.01;
-        
-        bg.updateHitbox();
-        bg.screenCenter();
-        
-        // 创建标题残影
-        //createTitleTrail();
-    }
-    
-    private function createTitleTrail():Void
-    {
-        var trail:FlxText = new FlxText(titleText.x, titleText.y, FlxG.width, "SETTINGS", 32);
-        trail.setFormat(null, 40, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-        trail.borderSize = 4;
-        trail.alpha = 0.5;
-        titleTrailGroup.add(trail);
-    }
-    
-    private function createSettingsUI():Void
-    {
-        var yPos:Float = 100;
-        var labelWidth:Int = 200;
-        var controlX:Int = 250;
-        
-        // Master Volume
-        var masterLabel = new FlxText(50, yPos, labelWidth, "Master Volume:", 16);
-        add(masterLabel);
-        
-        masterVolumeSlider = new FlxUISlider(this, "masterVolumeValue", controlX, yPos, 0, 1, 300, 15, 5, FlxColor.WHITE, FlxColor.GRAY);
-        masterVolumeSlider.callback = function(value:Float) {
-            SettingsData.instance.masterVolume = value;
-            FlxG.sound.volume = value;
-            updateMusicVolume();
-        };
-        add(masterVolumeSlider);
-        
-        yPos += 80;
-        
-        // Music Volume
-        var musicLabel = new FlxText(50, yPos, labelWidth, "Music Volume:", 16);
-        add(musicLabel);
-        
-        musicVolumeSlider = new FlxUISlider(this, "musicVolumeValue", controlX, yPos, 0, 1, 300, 15, 5, FlxColor.WHITE, FlxColor.GRAY);
-        musicVolumeSlider.callback = function(value:Float) {
-            SettingsData.instance.musicVolume = value;
-            updateMusicVolume();
-        };
-        add(musicVolumeSlider);
-        
-        yPos += 80;
-        
-        // SFX Volume
-        var sfxLabel = new FlxText(50, yPos, labelWidth, "SFX Volume:", 16);
-        add(sfxLabel);
-        
-        sfxVolumeSlider = new FlxUISlider(this, "sfxVolumeValue", controlX, yPos, 0, 1, 300, 15, 5, FlxColor.WHITE, FlxColor.GRAY);
-        sfxVolumeSlider.callback = function(value:Float) {
-            SettingsData.instance.sfxVolume = value;
-        };
-        add(sfxVolumeSlider);
-        
-        yPos += 80;
-        
-        // Fullscreen
-        var fullscreenLabel = new FlxText(50, yPos, labelWidth, "Fullscreen:", 16);
-        add(fullscreenLabel);
-        
-        fullscreenCheckbox = new FlxUICheckBox(controlX, yPos, null, null, "", 100);
-        fullscreenCheckbox.checked = SettingsData.instance.fullscreen;
-        fullscreenCheckbox.callback = function() {
-            SettingsData.instance.fullscreen = fullscreenCheckbox.checked;
-        };
-        add(fullscreenCheckbox);
-        
-        yPos += 40;
-        
-        // VSync - 在同一行添加帧率设置
-        var vsyncLabel = new FlxText(50, yPos, labelWidth, "VSync:", 16);
-        add(vsyncLabel);
-        
-        // 存储VSync的位置
-        vsyncX = controlX;
-        vsyncCheckbox = new FlxUICheckBox(controlX, yPos, null, null, "", 100);
-        vsyncCheckbox.checked = SettingsData.instance.vsync;
-        vsyncCheckbox.callback = function() {
-            SettingsData.instance.vsync = vsyncCheckbox.checked;
-            drawFramerateUI();
-        };
-        add(vsyncCheckbox);
-        
-        // Frame Rate Limit (与VSync在同一行)
-        frameRateLabel = new FlxText(controlX - 50, yPos, labelWidth, "FrameRate:", 16);
-        add(frameRateLabel);
-        
-        // 存储帧率设置的原位置
-        frameRateOriginalX = controlX + 50;
-        frameRateStepper = new FlxUINumericStepper(controlX + 220, yPos, 10, SettingsData.instance.frameRateLimit, 30, 240, 0);
-        frameRateStepper.name = "frameRateStepper";
-        add(frameRateStepper);
-        
-        yPos += 40;
-        
-        // Show FPS
-        var fpsLabel = new FlxText(50, yPos, labelWidth, "Show FPS:", 16);
-        add(fpsLabel);
-        
-        showFPSCheckbox = new FlxUICheckBox(controlX, yPos, null, null, "", 100);
-        showFPSCheckbox.checked = SettingsData.instance.showFPS;
-        showFPSCheckbox.callback = function() {
-            SettingsData.instance.showFPS = showFPSCheckbox.checked;
-        };
-        add(showFPSCheckbox);
-        
-        yPos += 40;
-
-        // Auto Pause
-        var autoPauseLabel = new FlxText(50, yPos, labelWidth, "Auto Pause:", 16);
-        add(autoPauseLabel);
-
-        autoPauseCheckbox = new FlxUICheckBox(controlX, yPos, null, null, "", 100);
-        autoPauseCheckbox.checked = SettingsData.instance.autoPause;
-        autoPauseCheckbox.callback = function() {
-            SettingsData.instance.autoPause = autoPauseCheckbox.checked;
-        };
-        add(autoPauseCheckbox);
-
-        yPos += 40;
-
-		// LanguagePlus
-		var languagePlusLabel = new FlxText(50, yPos, labelWidth, "Language:", 16);
-		add(languagePlusLabel);
-
-		var languagePluss = ["English", "Simplified_Chinese", "Japanese"];
-		languagePlusDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(languagePluss, true), function(languagePlus:String) {
-			SettingsData.instance.languagePlus = languagePlus;
-		});
-
-		languagePlusDropdown.selectedLabel = SettingsData.instance.languagePlus;
-		add(languagePlusDropdown);
-        
-        yPos += 40;
-        
-        // Resolution
-        var resolutionLabel = new FlxText(50, yPos, 500, "Resolution: In Development...", 16);
-        add(resolutionLabel);
- 
-        yPos += 40;
-        
-        // Title Theme
-        var titleThemeLabel = new FlxText(50, yPos, labelWidth, "Title Theme:", 16);
-        add(titleThemeLabel);
-
-        var titleThemes = ["1st_PV", "2nd_PV", "3rd_PV", "4th_PV", "4th_PV_2", "4.5th_PV", "5th_PV"];
-        titleThemeDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(titleThemes, true), function(title:String) {
-            SettingsData.instance.titleTheme = title;
-        });
-        titleThemeDropdown.selectedLabel = SettingsData.instance.titleTheme;
-        add(titleThemeDropdown);
-    }
-
-	private function formatlanguagePlusForDisplay(languagePlus:String):String {
-		// 将下划线替换为空格并首字母大写
-		var parts = languagePlus.split("_");
-		for (i in 0...parts.length) {
-			parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].substr(1).toLowerCase();
-		}
-		return parts.join(" ");
-    }
-    
-    private function drawFramerateUI():Void
-    {
-        var isVsyncEnabled = SettingsData.instance.vsync;
-        
-        if (isVsyncEnabled) {
-            // VSync启用，将帧率设置移动到VSync位置并隐藏
-            FlxTween.tween(frameRateLabel, {x: vsyncX, alpha: 0}, 0.3, {
-                ease: FlxEase.quadOut,
-                onComplete: function(tween:FlxTween) {
-                    frameRateLabel.visible = false;
-                    frameRateLabel.active = false;
-                }
-            });
-            
-            FlxTween.tween(frameRateStepper, {x: vsyncX + 100, alpha: 0}, 0.3, {
-                ease: FlxEase.quadOut,
-                onComplete: function(tween:FlxTween) {
-                    frameRateStepper.visible = false;
-                    frameRateStepper.active = false;
-                }
-            });
-        } else {
-            // VSync禁用，将帧率设置移回原位置并显示
-            frameRateLabel.visible = true;
-            frameRateLabel.active = true;
-            frameRateStepper.visible = true;
-            frameRateStepper.active = true;
-            
-            FlxTween.tween(frameRateLabel, {x: frameRateOriginalX, alpha: 1}, 0.3, {ease: FlxEase.quadOut});
-            FlxTween.tween(frameRateStepper, {x: frameRateOriginalX + 130, alpha: 1}, 0.3, {ease: FlxEase.quadOut});
-        }
+        optionsBackground.onBeat();
+        // 可以选择性地创建标题残影
+        // optionsTitle.createTitleTrail();
     }
     
     override public function update(elapsed:Float):Void
@@ -353,66 +109,19 @@ class OptionsState extends FlxState
         super.update(elapsed);
         
         // 检测帧率限制器的值变化
-        if (frameRateStepper != null && frameRateStepper.value != SettingsData.instance.frameRateLimit) {
-            SettingsData.instance.frameRateLimit = Std.int(frameRateStepper.value);
+        if (optionsUI.frameRateStepper != null && optionsUI.frameRateStepper.value != SettingsData.instance.frameRateLimit) {
+            SettingsData.instance.frameRateLimit = Std.int(optionsUI.frameRateStepper.value);
         }
         
-        // 更新Conductor的歌曲位置
-        if (bgMusic != null)
-        {
-            Conductor.songPosition = bgMusic.time;
-            Conductor.update(elapsed);
-        }
-		if (bgMusic != null) {
-			// 检测音乐是否循环（当时间回到接近0时）
-			if (bgMusic.time < 100 && Conductor.songPosition > bgMusic.length - 100) {
-				Conductor.reset();
-			}
-
-			Conductor.songPosition = bgMusic.time;
-			Conductor.update(elapsed);
-		}
-
-        titleTime += elapsed;
-        titleText.y = titleY + Math.sin(titleTime * titleSpeed) * titleAmplitude;
-        
-        updateTitleTrails(elapsed);
-        
-        updateBgScale(elapsed);
+        // 更新各个模块
+        optionsBackground.update(elapsed);
+        optionsTitle.update(elapsed);
         
         // Handle escape key to go back
         if (FlxG.keys.justPressed.ESCAPE)
         {
             goBack();
         }
-    }
-    
-    private function updateTitleTrails(elapsed:Float):Void
-    {
-        for (trail in titleTrailGroup.members)
-        {
-            if (trail != null)
-            {
-                trail.y += elapsed * 50;
-                trail.alpha -= elapsed * 2;
-                
-                if (trail.alpha <= 0)
-                {
-                    titleTrailGroup.remove(trail, true);
-                    trail.destroy();
-                }
-            }
-        }
-    }
-    
-    private function updateBgScale(elapsed:Float):Void
-    {
-        var currentScale = bg.scale.x;
-        var newScale = FlxMath.lerp(currentScale, defaultBgScale, elapsed * 5);
-        
-        bg.scale.set(newScale, newScale);
-        bg.updateHitbox();
-        bg.screenCenter();
     }
     
     private function applySettings():Void
@@ -428,7 +137,7 @@ class OptionsState extends FlxState
         confirmText.setFormat(null, 42, FlxColor.GREEN, CENTER);
         add(confirmText);
 
-        bgSfx = FlxG.sound.play("assets/sounds/saveoptions.ogg", SettingsData.instance.masterVolume * SettingsData.instance.sfxVolume * 0.8, false);
+        optionsBackground.playConfirmSound();
 
         FlxTween.tween(confirmText, {alpha: 0}, 2, {onComplete: function(_) {
             remove(confirmText);
@@ -438,7 +147,6 @@ class OptionsState extends FlxState
         SettingsData.instance.load();
         final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
         FlxG.updateFramerate = SettingsData.instance.vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : SettingsData.instance.frameRateLimit;
-
     }
     
     private function resetSettings():Void
@@ -456,29 +164,18 @@ class OptionsState extends FlxState
         SettingsData.instance.titleTheme = "1st_PV";
         SettingsData.instance.frameRateLimit = 60;
         
-        // Update UI
+        // Update UI values
         masterVolumeValue = SettingsData.instance.masterVolume;
         musicVolumeValue = SettingsData.instance.musicVolume;
         sfxVolumeValue = SettingsData.instance.sfxVolume;
-        fullscreenCheckbox.checked = SettingsData.instance.fullscreen;
-        vsyncCheckbox.checked = SettingsData.instance.vsync;
-        showFPSCheckbox.checked = SettingsData.instance.showFPS;
-        autoPauseCheckbox.checked = SettingsData.instance.autoPause;
-        languagePlusDropdown.selectedLabel = "English";
-        titleThemeDropdown.selectedLabel = "1st_PV";
         
-        // 更新帧率限制器的值
-        if (frameRateStepper != null) {
-            frameRateStepper.value = SettingsData.instance.frameRateLimit;
-        }
+        // Reset UI elements
+        optionsUI.resetToDefaults();
         
         // 强制更新滑块显示
-        masterVolumeSlider.value = masterVolumeValue;
-        musicVolumeSlider.value = musicVolumeValue;
-        sfxVolumeSlider.value = sfxVolumeValue;
-        
-        // 更新帧率UI状态
-        drawFramerateUI();
+        optionsUI.masterVolumeSlider.value = masterVolumeValue;
+        optionsUI.musicVolumeSlider.value = musicVolumeValue;
+        optionsUI.sfxVolumeSlider.value = sfxVolumeValue;
         
         // 更新音乐音量
         updateMusicVolume();
@@ -498,33 +195,54 @@ class OptionsState extends FlxState
         }});
     }
     
-    private function goBack():Void
+    /**
+     * 从设置数据更新UI组件
+     * 用于导入设置后刷新UI状态
+     */
+    public function updateUIFromSettings():Void
     {
-        if (bgMusic != null)
-        {
-            bgMusic.stop();
-        }
-        if (bgSfx != null)
-        {
-            bgSfx.stop();
+        // 更新音量值
+        masterVolumeValue = SettingsData.instance.masterVolume;
+        musicVolumeValue = SettingsData.instance.musicVolume;
+        sfxVolumeValue = SettingsData.instance.sfxVolume;
+        
+        // 更新UI组件
+        optionsUI.masterVolumeSlider.value = masterVolumeValue;
+        optionsUI.musicVolumeSlider.value = musicVolumeValue;
+        optionsUI.sfxVolumeSlider.value = sfxVolumeValue;
+        
+        optionsUI.fullscreenCheckbox.checked = SettingsData.instance.fullscreen;
+        optionsUI.vsyncCheckbox.checked = SettingsData.instance.vsync;
+        optionsUI.showFPSCheckbox.checked = SettingsData.instance.showFPS;
+        optionsUI.autoPauseCheckbox.checked = SettingsData.instance.autoPause;
+        
+        optionsUI.languagePlusDropdown.selectedLabel = SettingsData.instance.languagePlus;
+        optionsUI.titleThemeDropdown.selectedLabel = SettingsData.instance.titleTheme;
+        
+        if (optionsUI.frameRateStepper != null) {
+            optionsUI.frameRateStepper.value = SettingsData.instance.frameRateLimit;
         }
         
+        // 更新帧率UI显示
+        optionsUI.drawFramerateUI();
+        
+        // 更新音乐音量
+        updateMusicVolume();
+    }
+    
+    private function goBack():Void
+    {
+        optionsBackground.stop();
         FlxG.switchState(new MainMenuState());
     }
     
     override public function destroy():Void
     {
         super.destroy();
-
-        if (bgMusic != null)
+        
+        if (optionsBackground != null)
         {
-            bgMusic.stop();
-            bgMusic.destroy();
-        }
-        if (bgSfx != null)
-        {
-            bgSfx.stop();
-            bgSfx.destroy();
+            optionsBackground.destroy();
         }
     }
 }

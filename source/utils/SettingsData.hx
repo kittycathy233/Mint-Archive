@@ -143,4 +143,79 @@ class SettingsData
 
         FlxG.save.flush();
     }
+    
+    /**
+     * 将设置导出为JSON字符串
+     * @return String 包含所有设置的JSON字符串
+     */
+    public function exportToJson():String
+    {
+        var settingsObj = {
+            masterVolume: masterVolume,
+            musicVolume: musicVolume,
+            sfxVolume: sfxVolume,
+            fullscreen: fullscreen,
+            resolution: {
+                x: resolution.x,
+                y: resolution.y
+            },
+            showFPS: showFPS,
+            languagePlus: languagePlus,
+            vsync: vsync,
+            autoPause: autoPause,
+            titleTheme: titleTheme,
+            antialiasing: antialiasing,
+            frameRateLimit: frameRateLimit
+        };
+        
+        return haxe.Json.stringify(settingsObj, null, "  ");
+    }
+    
+    /**
+     * 从JSON字符串导入设置
+     * @param jsonString 包含设置的JSON字符串
+     * @return Bool 导入是否成功
+     */
+    public function importFromJson(jsonString:String):Bool
+    {
+        try
+        {
+            var settingsObj = haxe.Json.parse(jsonString);
+            
+            // 验证必要的字段
+            if (settingsObj.masterVolume == null || 
+                settingsObj.musicVolume == null || 
+                settingsObj.sfxVolume == null)
+            {
+                return false;
+            }
+            
+            // 应用设置
+            if (settingsObj.masterVolume != null) masterVolume = settingsObj.masterVolume;
+            if (settingsObj.musicVolume != null) musicVolume = settingsObj.musicVolume;
+            if (settingsObj.sfxVolume != null) sfxVolume = settingsObj.sfxVolume;
+            if (settingsObj.fullscreen != null) fullscreen = settingsObj.fullscreen;
+            
+            if (settingsObj.resolution != null)
+            {
+                resolution.x = settingsObj.resolution.x;
+                resolution.y = settingsObj.resolution.y;
+            }
+            
+            if (settingsObj.showFPS != null) showFPS = settingsObj.showFPS;
+            if (settingsObj.languagePlus != null) languagePlus = settingsObj.languagePlus;
+            if (settingsObj.vsync != null) vsync = settingsObj.vsync;
+            if (settingsObj.autoPause != null) autoPause = settingsObj.autoPause;
+            if (settingsObj.titleTheme != null) titleTheme = settingsObj.titleTheme;
+            if (settingsObj.antialiasing != null) antialiasing = settingsObj.antialiasing;
+            if (settingsObj.frameRateLimit != null) frameRateLimit = settingsObj.frameRateLimit;
+            
+            return true;
+        }
+        catch (e:Dynamic)
+        {
+            trace("Error importing settings: " + e);
+            return false;
+        }
+    }
 }
