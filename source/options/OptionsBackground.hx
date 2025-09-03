@@ -19,6 +19,12 @@ class OptionsBackground
     
     private var parent:OptionsState;
     
+    // 主题资源
+    private static inline var DARK_THEME_BG:String = "assets/images/bg/BG_Garret_Night.jpg";
+    private static inline var LIGHT_THEME_BG:String = "assets/images/bg/BG_Residence.jpg";
+    private static inline var DARK_THEME_MUSIC:String = "assets/music/Theme_281.ogg";
+    private static inline var LIGHT_THEME_MUSIC:String = "assets/music/Theme_14.ogg";
+    
     public function new(parent:OptionsState)
     {
         this.parent = parent;
@@ -26,17 +32,23 @@ class OptionsBackground
     
     public function create():Void
     {
-        // 加载背景图
-        bg = new FlxSprite(0, 0).loadGraphic("assets/images/bg/BG_Garret_Night.jpg");
+        // 根据主题模式加载背景图
+        var bgPath = SettingsData.instance.themeMode == "Light" ? LIGHT_THEME_BG : DARK_THEME_BG;
+        bg = new FlxSprite(0, 0).loadGraphic(bgPath);
         bg.scale.set(1.8, 1.8);
         bg.updateHitbox();
         bg.screenCenter();
         bg.scrollFactor.set(0.2, 0.2);
         parent.add(bg);
         
-        // 播放背景音乐
-        bgMusic = FlxG.sound.play("assets/music/Theme_281.ogg", SettingsData.instance.masterVolume * SettingsData.instance.musicVolume * 0.8, true);
+        // 根据主题模式播放背景音乐
+        var musicPath = SettingsData.instance.themeMode == "Light" ? LIGHT_THEME_MUSIC : DARK_THEME_MUSIC;
+        bgMusic = FlxG.sound.play(musicPath, SettingsData.instance.masterVolume * SettingsData.instance.musicVolume * 0.8, true);
         bgMusic.persist = true;
+        
+        // 设置Conductor的BPM
+        var bpm = SettingsData.instance.themeMode == "Light" ? 120 : 114;
+        Conductor.init(bpm);
         
         updateMusicVolume();
     }

@@ -32,6 +32,7 @@ class OptionsUI
     public var languagePlusDropdown:FlxUIDropDownMenu;
     public var resolutionDropdown:FlxUIDropDownMenu;
     public var titleThemeDropdown:FlxUIDropDownMenu;
+    public var themeModeDropdown:FlxUIDropDownMenu;
     public var frameRateStepper:FlxUINumericStepper;
     public var frameRateLabel:FlxText;
     
@@ -88,6 +89,8 @@ class OptionsUI
     {
         // Master Volume
         var masterLabel = new FlxText(50, yPos, labelWidth, "Master Volume:", 16);
+        masterLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        masterLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(masterLabel);
         
         masterVolumeSlider = new FlxUISlider(parent, "masterVolumeValue", controlX, yPos, 0, 1, 300, 15, 5, FlxColor.WHITE, FlxColor.GRAY);
@@ -102,6 +105,8 @@ class OptionsUI
         
         // Music Volume
         var musicLabel = new FlxText(50, yPos, labelWidth, "Music Volume:", 16);
+        musicLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        musicLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(musicLabel);
         
         musicVolumeSlider = new FlxUISlider(parent, "musicVolumeValue", controlX, yPos, 0, 1, 300, 15, 5, FlxColor.WHITE, FlxColor.GRAY);
@@ -115,6 +120,8 @@ class OptionsUI
         
         // SFX Volume
         var sfxLabel = new FlxText(50, yPos, labelWidth, "SFX Volume:", 16);
+        sfxLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        sfxLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(sfxLabel);
         
         sfxVolumeSlider = new FlxUISlider(parent, "sfxVolumeValue", controlX, yPos, 0, 1, 300, 15, 5, FlxColor.WHITE, FlxColor.GRAY);
@@ -128,6 +135,8 @@ class OptionsUI
     {
         // Fullscreen
         var fullscreenLabel = new FlxText(50, yPos, labelWidth, "Fullscreen:", 16);
+        fullscreenLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        fullscreenLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(fullscreenLabel);
         
         fullscreenCheckbox = new FlxUICheckBox(controlX, yPos, null, null, "", 100);
@@ -145,6 +154,8 @@ class OptionsUI
         
         // Show FPS
         var fpsLabel = new FlxText(50, yPos, labelWidth, "Show FPS:", 16);
+        fpsLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        fpsLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(fpsLabel);
         
         showFPSCheckbox = new FlxUICheckBox(controlX, yPos, null, null, "", 100);
@@ -158,6 +169,8 @@ class OptionsUI
 
         // Auto Pause
         var autoPauseLabel = new FlxText(50, yPos, labelWidth, "Auto Pause:", 16);
+        autoPauseLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        autoPauseLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(autoPauseLabel);
 
         autoPauseCheckbox = new FlxUICheckBox(controlX, yPos, null, null, "", 100);
@@ -171,6 +184,8 @@ class OptionsUI
     private function createVSyncAndFrameRate(yPos:Float, labelWidth:Int, controlX:Int):Void
     {
         var vsyncLabel = new FlxText(50, yPos, labelWidth, "VSync:", 16);
+        vsyncLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        vsyncLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(vsyncLabel);
         
         vsyncX = controlX;
@@ -184,6 +199,8 @@ class OptionsUI
         
         // Frame Rate Limit
         frameRateLabel = new FlxText(controlX - 50, yPos, labelWidth, "FrameRate:", 16);
+        frameRateLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        frameRateLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(frameRateLabel);
         
         frameRateOriginalX = controlX + 50;
@@ -196,6 +213,8 @@ class OptionsUI
     {
         // Language
         var languagePlusLabel = new FlxText(50, yPos, labelWidth, "Language:", 16);
+        languagePlusLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        languagePlusLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(languagePlusLabel);
 
         var languagePluss = ["English", "Simplified_Chinese", "Japanese"];
@@ -208,14 +227,34 @@ class OptionsUI
         
         yPos += 40;
         
+        // Theme Mode
+        var themeModeLabel = new FlxText(50, yPos, labelWidth, "Theme Mode:", 16);
+        themeModeLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        themeModeLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
+        parent.add(themeModeLabel);
+        
+        var themeModes = ["Dark", "Light"];
+        themeModeDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(themeModes, true), function(theme:String) {
+            // 只保存选择，不立即应用
+            SettingsData.instance.themeMode = theme;
+        });
+        themeModeDropdown.selectedLabel = SettingsData.instance.themeMode;
+        parent.add(themeModeDropdown);
+        
+        yPos += 40;
+        
         // Resolution (placeholder)
         var resolutionLabel = new FlxText(50, yPos, 500, "Resolution: In Development...", 16);
+        resolutionLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        resolutionLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(resolutionLabel);
  
         yPos += 40;
         
         // Title Theme
         var titleThemeLabel = new FlxText(50, yPos, labelWidth, "Title Theme:", 16);
+        titleThemeLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        titleThemeLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
         parent.add(titleThemeLabel);
 
         var titleThemes = ["1st_PV", "2nd_PV", "3rd_PV", "4th_PV", "4th_PV_2", "4.5th_PV", "5th_PV"];
@@ -592,6 +631,7 @@ class OptionsUI
         autoPauseCheckbox.checked = false;
         languagePlusDropdown.selectedLabel = "English";
         titleThemeDropdown.selectedLabel = "1st_PV";
+        themeModeDropdown.selectedLabel = "Dark";
         
         if (frameRateStepper != null) {
             frameRateStepper.value = 60;

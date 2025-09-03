@@ -20,7 +20,8 @@ class SettingsData
     public var autoPause:Bool = false;
     public var titleTheme:String = "1st_PV";
     public var antialiasing:Bool = true;
-    public var frameRateLimit:Int = 60; // 新增帧率限制字段
+    public var frameRateLimit:Int = 60; // 帧率限制字段
+    public var themeMode:String = "Dark"; // 主题模式：Dark或Light
 
     public function new() {}
     
@@ -50,11 +51,12 @@ class SettingsData
         save.data.titleTheme = titleTheme;
         save.data.antialiasing = antialiasing;
         save.data.frameRateLimit = frameRateLimit;
+        save.data.themeMode = themeMode;
         
         save.flush();
         save.close();
 
-        trace("Settings saved:     TitleTheme: " + titleTheme + "   Language: " + languagePlus);
+        trace("Settings saved:     TitleTheme: " + titleTheme + "   Language: " + languagePlus + "   ThemeMode: " + themeMode);
     }
     
     public function load():Void
@@ -115,6 +117,21 @@ class SettingsData
 			}
 		}
         
+        // 加载主题模式设置
+        if (save.data.themeMode != null) {
+            var themeModeValue = save.data.themeMode;
+            themeModeValue = replaceSpecialChars(themeModeValue);
+            
+            // 处理可能的数字值
+            if (themeModeValue == "1") {
+                themeMode = "Light";
+            } else if (themeModeValue == "0") {
+                themeMode = "Dark";
+            } else {
+                themeMode = themeModeValue;
+            }
+        }
+        
         if (save.data.antialiasing != null) antialiasing = save.data.antialiasing;
         if (save.data.frameRateLimit != null) frameRateLimit = save.data.frameRateLimit;
         
@@ -123,7 +140,7 @@ class SettingsData
         final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
         FlxG.stage.frameRate = vsync ? Std.int(FlxMath.bound(refreshRate, 60, 240)) : frameRateLimit;
 
-        trace("Settings loaded:     TitleTheme: " + titleTheme + "   Language: " + languagePlus + "     FPS:" + frameRateLimit);
+        trace("Settings loaded:     TitleTheme: " + titleTheme + "   Language: " + languagePlus + "   ThemeMode: " + themeMode + "   FPS:" + frameRateLimit);
     }
     
     private function replaceSpecialChars(str:String):String
@@ -165,7 +182,8 @@ class SettingsData
             autoPause: autoPause,
             titleTheme: titleTheme,
             antialiasing: antialiasing,
-            frameRateLimit: frameRateLimit
+            frameRateLimit: frameRateLimit,
+            themeMode: themeMode
         };
         
         return haxe.Json.stringify(settingsObj, null, "  ");
@@ -212,6 +230,7 @@ class SettingsData
             if (settingsObj.titleTheme != null) newSettings.titleTheme = settingsObj.titleTheme;
             if (settingsObj.antialiasing != null) newSettings.antialiasing = settingsObj.antialiasing;
             if (settingsObj.frameRateLimit != null) newSettings.frameRateLimit = settingsObj.frameRateLimit;
+            if (settingsObj.themeMode != null) newSettings.themeMode = settingsObj.themeMode;
             
             // 比较新旧设置，找出变更
             var changes = compareSettings(this, newSettings);
@@ -286,6 +305,9 @@ class SettingsData
         if (oldSettings.frameRateLimit != newSettings.frameRateLimit)
             changes.push({setting: "Frame Rate Limit", oldValue: oldSettings.frameRateLimit, newValue: newSettings.frameRateLimit});
             
+        if (oldSettings.themeMode != newSettings.themeMode)
+            changes.push({setting: "Theme Mode", oldValue: oldSettings.themeMode, newValue: newSettings.themeMode});
+            
         return changes;
     }
     
@@ -309,5 +331,6 @@ class SettingsData
         this.titleTheme = newSettings.titleTheme;
         this.antialiasing = newSettings.antialiasing;
         this.frameRateLimit = newSettings.frameRateLimit;
+        this.themeMode = newSettings.themeMode;
     }
 }

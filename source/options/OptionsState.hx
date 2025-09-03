@@ -97,6 +97,27 @@ class OptionsState extends FlxState
         optionsBackground.updateMusicVolume();
     }
     
+    /**
+     * 更新主题（背景、音乐和标题）
+     */
+    public function updateTheme():Void
+    {
+        // 移除旧背景
+        if (optionsBackground != null) {
+            optionsBackground.stop();
+            remove(optionsBackground.bg);
+        }
+        
+        // 重新创建背景
+        optionsBackground = new OptionsBackground(this);
+        optionsBackground.create();
+        
+        // 更新标题颜色
+        if (optionsTitle != null) {
+            optionsTitle.updateTheme();
+        }
+    }
+    
     private function onBeat():Void
     {
         optionsBackground.onBeat();
@@ -218,6 +239,7 @@ class OptionsState extends FlxState
         
         optionsUI.languagePlusDropdown.selectedLabel = SettingsData.instance.languagePlus;
         optionsUI.titleThemeDropdown.selectedLabel = SettingsData.instance.titleTheme;
+        optionsUI.themeModeDropdown.selectedLabel = SettingsData.instance.themeMode;
         
         if (optionsUI.frameRateStepper != null) {
             optionsUI.frameRateStepper.value = SettingsData.instance.frameRateLimit;
@@ -225,6 +247,9 @@ class OptionsState extends FlxState
         
         // 更新帧率UI显示
         optionsUI.drawFramerateUI();
+        
+        // 更新主题
+        updateTheme();
         
         // 更新音乐音量
         updateMusicVolume();
