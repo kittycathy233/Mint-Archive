@@ -27,8 +27,9 @@ import examples.flixel.FlixelState;
 import examples.ReisaHome;
 import player.TestState;
 import examples.SoraShop;
+import BaseState;
 
-class MainMenuState extends FlxState
+class MainMenuState extends BaseState
 {
     private var playButton:FlxButton;
     private var reisaButton:FlxButton;
@@ -58,7 +59,7 @@ class MainMenuState extends FlxState
 
     private var logo:FlxSprite;
 
-private var mouseTrail:debug.MouseTrail;
+
 
     override public function create():Void 
     {
@@ -256,16 +257,7 @@ private var mouseTrail:debug.MouseTrail;
         loadingText.setFormat(null, 20, FlxColor.WHITE, LEFT);
         add(loadingText);
 
-        // 在super.create()之后添加鼠标拖尾效果
-
-mouseTrail = new debug.MouseTrail(25); // 使用25个点
-mouseTrail.pointSize = 20; // 更大的点
-mouseTrail.pointColor = FlxColor.fromRGB(255, 255, 255, 200);
-mouseTrail.lineColor = FlxColor.fromRGB(150, 200, 255, 100);
-mouseTrail.lineThickness = 4;
-mouseTrail.glowIntensity = 2.5;
-mouseTrail.glowColor = FlxColor.fromRGB(100, 150, 255, 200);
-        //add(mouseTrail);
+        // 鼠标拖尾效果已通过BaseState自动添加
 
         // 初始进度设置为0
         setProgress(0.08);
@@ -353,9 +345,7 @@ mouseTrail.glowColor = FlxColor.fromRGB(100, 150, 255, 200);
             loadingCircle.angle = circleAngle; // 保持当前角度
         }
 
-        if (mouseTrail != null) {
-        mouseTrail.update(elapsed);
-    }
+        // 鼠标拖尾更新已通过BaseState自动处理
         // 这里可以添加实际的进度更新逻辑
         // 示例：每帧增加一点进度
         // if (progressValue < 1) {

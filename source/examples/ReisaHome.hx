@@ -23,8 +23,9 @@ import flixel.tweens.FlxEase;
 import flixel.math.FlxPoint;
 import flixel.FlxCamera;
 import utils.SettingsData;
+import BaseState;
 
-class ReisaHome extends FlxTransitionableState
+class ReisaHome extends BaseState
 {
     private var backButton:FlxButton;
     private var bgMusic:flixel.sound.FlxSound;

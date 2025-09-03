@@ -21,8 +21,9 @@ import spine.SkeletonData;
 import spine.flixel.SkeletonSprite;
 import spine.flixel.FlixelTextureLoader;
 import openfl.text.Font;
+import BaseState;
 
-class TestState extends FlxState
+class TestState extends BaseState
 {
     // Spine characters
     var qingyetest:SkeletonSprite;

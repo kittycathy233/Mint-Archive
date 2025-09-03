@@ -22,6 +22,10 @@ class SettingsData
     public var antialiasing:Bool = true;
     public var frameRateLimit:Int = 60; // 帧率限制字段
     public var themeMode:String = "Dark"; // 主题模式：Dark或Light
+    
+    // 鼠标拖尾设置
+    public var mouseTrailEnabled:Bool = true;
+    public var mouseTrailColor:String = "Blue"; // Blue, Red, Green, Purple, White
 
     public function new() {}
     
@@ -52,6 +56,8 @@ class SettingsData
         save.data.antialiasing = antialiasing;
         save.data.frameRateLimit = frameRateLimit;
         save.data.themeMode = themeMode;
+        save.data.mouseTrailEnabled = mouseTrailEnabled;
+        save.data.mouseTrailColor = mouseTrailColor;
         
         save.flush();
         save.close();
@@ -134,6 +140,34 @@ class SettingsData
         
         if (save.data.antialiasing != null) antialiasing = save.data.antialiasing;
         if (save.data.frameRateLimit != null) frameRateLimit = save.data.frameRateLimit;
+        if (save.data.mouseTrailEnabled != null) mouseTrailEnabled = save.data.mouseTrailEnabled;
+        
+        // 加载鼠标拖尾颜色设置
+        if (save.data.mouseTrailColor != null) {
+            var mouseTrailColorValue = save.data.mouseTrailColor;
+            mouseTrailColorValue = replaceSpecialChars(mouseTrailColorValue);
+            
+            // 处理可能的数字值
+            if (mouseTrailColorValue == "7") {
+                mouseTrailColor = "white";
+            } else if (mouseTrailColorValue == "6") {
+                mouseTrailColor = "yellow";
+            } else if (mouseTrailColorValue == "5") {
+                mouseTrailColor = "cyan";
+            } else if (mouseTrailColorValue == "4") {
+                mouseTrailColor = "orange";
+            } else if (mouseTrailColorValue == "3") {
+                mouseTrailColor = "purple";
+            } else if (mouseTrailColorValue == "2") {
+                mouseTrailColor = "green";
+            } else if (mouseTrailColorValue == "1") {
+                mouseTrailColor = "red";
+            } else if (mouseTrailColorValue == "0") {
+                mouseTrailColor = "blue";
+            } else {
+                mouseTrailColor = mouseTrailColorValue;
+            }
+        }
         
         save.close();
 
@@ -183,7 +217,9 @@ class SettingsData
             titleTheme: titleTheme,
             antialiasing: antialiasing,
             frameRateLimit: frameRateLimit,
-            themeMode: themeMode
+            themeMode: themeMode,
+            mouseTrailEnabled: mouseTrailEnabled,
+            mouseTrailColor: mouseTrailColor
         };
         
         return haxe.Json.stringify(settingsObj, null, "  ");
@@ -231,6 +267,8 @@ class SettingsData
             if (settingsObj.antialiasing != null) newSettings.antialiasing = settingsObj.antialiasing;
             if (settingsObj.frameRateLimit != null) newSettings.frameRateLimit = settingsObj.frameRateLimit;
             if (settingsObj.themeMode != null) newSettings.themeMode = settingsObj.themeMode;
+            if (settingsObj.mouseTrailEnabled != null) newSettings.mouseTrailEnabled = settingsObj.mouseTrailEnabled;
+            if (settingsObj.mouseTrailColor != null) newSettings.mouseTrailColor = settingsObj.mouseTrailColor;
             
             // 比较新旧设置，找出变更
             var changes = compareSettings(this, newSettings);
@@ -308,6 +346,12 @@ class SettingsData
         if (oldSettings.themeMode != newSettings.themeMode)
             changes.push({setting: "Theme Mode", oldValue: oldSettings.themeMode, newValue: newSettings.themeMode});
             
+        if (oldSettings.mouseTrailEnabled != newSettings.mouseTrailEnabled)
+            changes.push({setting: "Mouse Trail Enabled", oldValue: oldSettings.mouseTrailEnabled, newValue: newSettings.mouseTrailEnabled});
+            
+        if (oldSettings.mouseTrailColor != newSettings.mouseTrailColor)
+            changes.push({setting: "Mouse Trail Color", oldValue: oldSettings.mouseTrailColor, newValue: newSettings.mouseTrailColor});
+            
         return changes;
     }
     
@@ -332,5 +376,7 @@ class SettingsData
         this.antialiasing = newSettings.antialiasing;
         this.frameRateLimit = newSettings.frameRateLimit;
         this.themeMode = newSettings.themeMode;
+        this.mouseTrailEnabled = newSettings.mouseTrailEnabled;
+        this.mouseTrailColor = newSettings.mouseTrailColor;
     }
 }

@@ -28,8 +28,9 @@ import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil;
 import flixel.math.FlxMath;
 import flixel.input.mouse.FlxMouseEventManager;
+import BaseState;
 
-class SoraShop extends FlxState
+class SoraShop extends BaseState
 {
     private var backButton:FlxButton;
     private var bgMusic:flixel.sound.FlxSound;

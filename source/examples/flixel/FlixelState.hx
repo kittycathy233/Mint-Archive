@@ -19,8 +19,9 @@ import debug.TransitionManager;
 import debug.TransitionSubState.TransitionType;
 import player.MainMenuState;
 import utils.SettingsData;
+import BaseState;
 
-class FlixelState extends FlxState
+class FlixelState extends BaseState
 {
 	override public function create():Void
 	{

@@ -36,6 +36,10 @@ class OptionsUI
     public var frameRateStepper:FlxUINumericStepper;
     public var frameRateLabel:FlxText;
     
+    // 鼠标拖尾设置
+    public var mouseTrailCheckbox:FlxUICheckBox;
+    public var mouseTrailColorDropdown:FlxUIDropDownMenu;
+    
     // 导入/导出按钮
     public var exportButton:FlxButton;
     public var importButton:FlxButton;
@@ -65,6 +69,9 @@ class OptionsUI
         
         createLanguageControls(yPos, labelWidth, controlX);
         yPos += 80; // 2 language/theme controls * 40
+        
+        createMouseTrailControls(yPos, labelWidth, controlX);
+        yPos += 80; // 2 mouse trail controls * 40
         
         createImportExportButtons();
     }
@@ -263,6 +270,37 @@ class OptionsUI
         });
         titleThemeDropdown.selectedLabel = SettingsData.instance.titleTheme;
         parent.add(titleThemeDropdown);
+    }
+    
+    private function createMouseTrailControls(yPos:Float, labelWidth:Int, controlX:Int):Void
+    {
+        // Mouse Trail Enable/Disable
+        var mouseTrailLabel = new FlxText(50, yPos, labelWidth, "Mouse Trail:", 16);
+        mouseTrailLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        mouseTrailLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
+        parent.add(mouseTrailLabel);
+        
+        mouseTrailCheckbox = new FlxUICheckBox(controlX, yPos, null, null, "", 100);
+        mouseTrailCheckbox.checked = SettingsData.instance.mouseTrailEnabled;
+        mouseTrailCheckbox.callback = function() {
+            SettingsData.instance.mouseTrailEnabled = mouseTrailCheckbox.checked;
+        };
+        parent.add(mouseTrailCheckbox);
+        
+        yPos += 40;
+        
+        // Mouse Trail Color
+        var mouseTrailColorLabel = new FlxText(50, yPos, labelWidth, "Trail Color:", 16);
+        mouseTrailColorLabel.color = FlxColor.fromRGB(173, 216, 230); // 浅蓝色
+        mouseTrailColorLabel.setBorderStyle(FlxTextBorderStyle.OUTLINE, FlxColor.BLACK, 1.5); // 添加黑色描边
+        parent.add(mouseTrailColorLabel);
+        
+        var trailColors = ["blue", "red", "green", "purple", "orange", "cyan", "yellow", "white"];
+        mouseTrailColorDropdown = new FlxUIDropDownMenu(controlX, yPos, FlxUIDropDownMenu.makeStrIdLabelArray(trailColors, true), function(color:String) {
+            SettingsData.instance.mouseTrailColor = color;
+        });
+        mouseTrailColorDropdown.selectedLabel = SettingsData.instance.mouseTrailColor;
+        parent.add(mouseTrailColorDropdown);
     }
     
     public function drawFramerateUI():Void
