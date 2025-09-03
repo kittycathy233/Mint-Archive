@@ -23,7 +23,7 @@ import openfl.display.Shape;
 import openfl.geom.Point;
 import options.OptionsState;
 
-import examples.flixel.FlixelState;
+import examples.Flixel.FlixelState;
 import examples.ReisaHome;
 import player.TestState;
 import examples.SoraShop;
