@@ -12,6 +12,7 @@ class SettingsData
     public var masterVolume:Float = 1.0;
     public var musicVolume:Float = 0.6;
     public var sfxVolume:Float = 0.7;
+    public var soundVolume:Float = 0.7; // 音效音量的别名，与sfxVolume保持同步
     public var fullscreen:Bool = false;
     public var resolution:FlxPoint = FlxPoint.get(1280, 720);
     public var showFPS:Bool = true;
@@ -26,6 +27,9 @@ class SettingsData
     // 鼠标拖尾设置
     public var mouseTrailEnabled:Bool = true;
     public var mouseTrailColor:String = "Blue"; // Blue, Red, Green, Purple, White
+    
+    // 音量滑块样式设置
+    public var volumeSliderStyle:String = "modern"; // modern, retro, neon, minimal, gaming
 
     public function new() {}
     
@@ -58,6 +62,7 @@ class SettingsData
         save.data.themeMode = themeMode;
         save.data.mouseTrailEnabled = mouseTrailEnabled;
         save.data.mouseTrailColor = mouseTrailColor;
+        save.data.volumeSliderStyle = volumeSliderStyle;
         
         save.flush();
         save.close();
@@ -168,6 +173,30 @@ class SettingsData
                 mouseTrailColor = mouseTrailColorValue;
             }
         }
+        
+        // 加载音量滑块样式设置
+        if (save.data.volumeSliderStyle != null) {
+            var volumeSliderStyleValue = save.data.volumeSliderStyle;
+            volumeSliderStyleValue = replaceSpecialChars(volumeSliderStyleValue);
+            
+            // 处理可能的数字值
+            if (volumeSliderStyleValue == "4") {
+                volumeSliderStyle = "gaming";
+            } else if (volumeSliderStyleValue == "3") {
+                volumeSliderStyle = "minimal";
+            } else if (volumeSliderStyleValue == "2") {
+                volumeSliderStyle = "neon";
+            } else if (volumeSliderStyleValue == "1") {
+                volumeSliderStyle = "retro";
+            } else if (volumeSliderStyleValue == "0") {
+                volumeSliderStyle = "modern";
+            } else {
+                volumeSliderStyle = volumeSliderStyleValue;
+            }
+        }
+        
+        // 同步soundVolume和sfxVolume
+        soundVolume = sfxVolume;
         
         save.close();
 

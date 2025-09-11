@@ -28,6 +28,7 @@ import examples.ReisaHome;
 import player.TestState;
 import examples.SoraShop;
 import BaseState;
+import objects.CustomProgressBar;
 
 class MainMenuState extends BaseState
 {
@@ -43,9 +44,7 @@ class MainMenuState extends BaseState
     // 新添加的UI元素
     private var loadingCircle:FlxSprite;
     private var loadingText:FlxText;
-    private var progressBar:FlxSprite;
-    private var progressBarBg:FlxSprite;
-    private var progressText:FlxText;
+    private var customProgressBar:CustomProgressBar;
     private var progressValue:Float = 0;
     
     // 旋转动画计时器
@@ -236,24 +235,31 @@ class MainMenuState extends BaseState
         loadingCircle.y = FlxG.height - 80;
         createAndroidStyleSpinner();
         add(loadingCircle);
-                
-        // 创建进度条背景
-        progressBarBg = new FlxSprite(20, FlxG.height - 50);
-        progressBarBg.makeGraphic(350, 15, FlxColor.GRAY);
-        add(progressBarBg);
         
-        // 创建进度条
-        progressBar = new FlxSprite(20, FlxG.height - 50);
-        progressBar.makeGraphic(1, 15, FlxColor.LIME);
-        add(progressBar);
+        // 创建自定义平行四边形进度条
+        customProgressBar = new CustomProgressBar(20, FlxG.height - 50, 400, 25);
         
-        // 创建进度文本
-        progressText = new FlxText(progressBarBg.width + 30, FlxG.height - 52, 60, "0%", 14);
-        progressText.setFormat(null, 14, FlxColor.WHITE, LEFT);
-        add(progressText);
+        // 设置天蓝色主题
+        customProgressBar.setColorTheme(
+            0x80404040, // 深灰50%透明背景
+            0xFF87CEEB, // 天蓝色起始
+            0xFF4169E1, // 皇家蓝结束
+            FlxColor.WHITE // 白色文字
+        );
+        
+        // 设置平行四边形倾斜角度
+        customProgressBar.setSkewAngle(20);
+        
+        // 启用发光效果和文本显示
+        customProgressBar.useGlowEffect = true;
+        customProgressBar.useTextDisplay = true;
+        customProgressBar.textFormat = "Loading... {progress}%";
+        customProgressBar.animationDuration = 0.8;
+        
+        add(customProgressBar);
         
         // 创建加载文本
-        loadingText = new FlxText(70, progressBar.y - 45, FlxG.width / 2, "(WIP) Welcome to Kivotos!", 16);
+        loadingText = new FlxText(70, customProgressBar.y - 45, FlxG.width / 2, "(WIP) Welcome to Kivotos!", 16);
         loadingText.setFormat(null, 20, FlxColor.WHITE, LEFT);
         add(loadingText);
 
@@ -321,13 +327,11 @@ class MainMenuState extends BaseState
     
     private function setProgress(value:Float):Void
     {
-        progressValue = value;
-        var width:Int = Std.int(350 * value);
-        progressBar.makeGraphic(width, 15, FlxColor.LIME);
-        progressBar.scale.x = 1;
-        progressBar.updateHitbox();
-        
-        progressText.text = Std.int(value * 100) + "%";
+        progressValue = Math.max(0, Math.min(1, value));
+        if (customProgressBar != null)
+        {
+            customProgressBar.setProgress(progressValue, true);
+        }
     }
 
     override public function update(elapsed:Float):Void
@@ -346,11 +350,10 @@ class MainMenuState extends BaseState
         }
 
         // 鼠标拖尾更新已通过BaseState自动处理
-        // 这里可以添加实际的进度更新逻辑
-        // 示例：每帧增加一点进度
-        // if (progressValue < 1) {
-        //     setProgress(progressValue + 0.001);
-        // }
+        // 演示进度条动画效果 - 缓慢增加进度到100%
+        if (progressValue < 1.0) {
+            setProgress(progressValue + 0.01); // 每帧增加1%，大约100秒完成
+        }
     }
 	private function transitionToState(targetState:Class<FlxState>, transitionDuration:Float = 1.5):Void {
 		// 防止多次点击
